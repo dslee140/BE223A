@@ -1,9 +1,12 @@
 {% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
 
 {% block page_content %}
 <div class="page-header">
-    <h1>Under construction...</h1>
+    <h1>Hello, {% if name %}{{ name }}! Nice to meet you here:)
+      {% else %}Stranger!{% endif %}</h1>
 </div>
+{{ wtf.quick_form(form) }}
 <div class="body">
     <h3></h3>
     <h4></h4>
