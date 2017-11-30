@@ -4,7 +4,6 @@ from flask_bootstrap import Bootstrap
 from flask_misaka import Misaka
 import os
 import pandas as pd
-import dataAnalysis as da
 
 
 content = ""
@@ -35,6 +34,10 @@ def chart():
     labels = ["January","February","March","April","May","June","July","August"]
     values = [10,9,8,7,6,4,7,8]
     return render_template('chart.html', values=values, labels=labels)
+
+@app.route('/calendar')
+def calendar():
+    return render_template("calendar.html")
 
 
 if __name__ == "__main__":
