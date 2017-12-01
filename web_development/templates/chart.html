@@ -1,8 +1,14 @@
 {% extends "base.html" %}
 
+
 {% block page_content %}
-<!DOCTYPE html><html lang="en"><head>   <meta charset="utf-8" />   <title>Chart.js </title>      <!-- import plugin script -->   <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.js'></script>   </head><body>
-<h1>Flask Chart.js</h1><!-- bar chart canvas element --><canvas id="chart" width="600" height="400"></canvas>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.js'></script>
+<div class='page-header'>
+  <h1>Flask Chart.js</h1>
+</div>
+
+<!-- bar chart canvas element -->
+<canvas id="chart" width="600" height="400"></canvas>
 <script>
    // bar chart data
    var barData = {
@@ -39,5 +45,5 @@
    });
 
 </script>
-</body></html>
+
 {% endblock %}
