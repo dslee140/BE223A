@@ -94,26 +94,76 @@ def preprocess_user_data(age, gender, modality, orgcode, day, hour):
     X_array = np.array([X_array]).astype(float)
     return X_array
 
+def process_demo_form(form):
+    age = form.age.data
+    gender = int(form.gender.data)
+    modality = form.modality.data
+    orgcode = form.orgcode.data
+    return age, gender, modality, orgcode
+
+import seaborn as sns
+
+def predict_week(age, gender, modality, orgcode, days = range(0,7), hours = range(8, 24)):
+
+
+    model =pickle.load(open("./data/models/XGBoostMidtermModel.dat", "rb"))
+
+    # Initialize prediction table
+    Y_predict = np.zeros((len(hours), len(days)))
+
+    i = 0
+    for hour in hours:
+        j = 0
+        for day in days:
+            X_test = preprocess_user_data(age, gender, modality, orgcode, day, hour)
+            xgdmat_test = xgb.DMatrix(data = X_test, feature_names = feature_names)
+            Y_predict[i, j] = model.predict(data = xgdmat_test)
+            j = j + 1
+        i = i + 1
+
+    days_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    hours_format = [str(hour) + ":00" for hour in hours]
+    df = pd.DataFrame(Y_predict, index=hours_format, columns=days_names)
+
+    cm = sns.light_palette("red", as_cmap=True)
+#    dfs.set_table_styles([
+#    {'selector': 'tr :first-child',
+#     'props': [('display', 'none')]}
+#     ])
+    s = df.style.set_table_attributes('class = "table table-hover"').background_gradient(cmap=cm).render()
+
+    #html_code = s.to_html(classes = ["table", "table-hover", "heat-map"])
+
+    return s
+
+
+
+
 # Live demo route
 @app.route('/livedemo', methods=['GET', 'POST'])
 def livedemo():
     form = DemoForm()
-    prob = None
+    Y_predict = None
+    predicted = False
     if form.validate_on_submit():
-        age = form.age.data
-        gender = int(form.gender.data)
-        modality = form.modality.data
-        orgcode = form.orgcode.data
-        X_test = preprocess_user_data(age, gender, modality, orgcode, 1, 17)
+        age, gender, modality, orgcode = process_demo_form(form)
+        #day, hour  = 1, 17
+        #X_test = preprocess_user_data(age, gender, modality, orgcode, day, hour)
         # Load ML model
-        model =pickle.load(open("./data/models/XGBoostMidtermModel.dat", "rb"))
+        #model =pickle.load(open("./data/models/XGBoostMidtermModel.dat", "rb"))
         # Predict
-        xgdmat_test = xgb.DMatrix(data = X_test, feature_names = feature_names)
-        Y_predict = model.predict(data = xgdmat_test)
-        prob = Y_predict
-        #name = form.name.data
-        #form.name.data = ''
-    return render_template('livedemo.html', form = form, prob = prob)
+        #xgdmat_test = xgb.DMatrix(data = X_test, feature_names = feature_names)
+        #Y_predict = model.predict(data = xgdmat_test)
+        #prob = Y_predict
+
+
+        Y_predict = predict_week(age, gender, modality, orgcode)
+        predicted = True
+        print(Y_predict)
+
+        return render_template('livedemo.html', form = form, html_code = Y_predict, predicted = predicted)
+    return render_template('livedemo.html', form = form, html_code = Y_predict, predicted = predicted)
+
 
 #@app.route('/dropdown')
 #def chart():
