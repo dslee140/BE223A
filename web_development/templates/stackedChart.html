@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.0/Chart.bundle.min.js"></script>
+<div class='page-header'>
+  <h1>Flask StackedBarChart</h1>
+</div>
+
+<!-- stacked chart canvas element -->
+<canvas id="StackedChart" width="600" height="400"></canvas>
+<script>
+   // stacked chart data
+  var config = {
+  type: 'bar',
+  data: {
+    labels: [{% for item in labels %}
+                   "{{item}}",
+               {% endfor %}],
+    datasets: [{
+      type: 'bar',
+      label: "{{stack[0]}}",
+      backgroundColor: "#FF8800",
+      data: {{data.get(stack[0])}},
+    }, {
+      type: 'bar',
+      label: "{{stack[1]}}",
+      backgroundColor: "#4285F4",
+      data: {{data.get(stack[1])}},
+    }]
+  },
+  options: {
+    scales: {
+      xAxes: [{
+        stacked: true
+      }],
+      yAxes: [{
+        stacked: true
+      }]
+    }
+  }
+};
+   // get stacked chart canvas
+   var mychart = document.getElementById("StackedChart").getContext("2d");
+
+   //var steps = 10;
+   //var max = 10;
+   // draw stacked chart
+   new Chart(mychart, config);
+</script>
+
+{% endblock %}
