@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, make_response
-from flask import Markup
+from flask import Markup, redirect
 from flask_bootstrap import Bootstrap
 from flask_misaka import Misaka
 import os
@@ -17,6 +17,13 @@ info=pd.read_csv('../withLabel.csv')
 #TODO This will be modified as long as database is set up
 info['date'], info['time'] = info['CompletedDTTM_D'].str.split(' ', 1).str
 info=info[['Modality','Age','OrgCode','Anatomy','date','Labels']]
+features = ['Modality','Age','OrgCode','Anatomy']
+feature_tup = [(feature, feature) for feature in features]
+
+
+#class ChartForm(FlaskForm):
+#    orgcode = SelectField('Organization Code', choices = orgcodes_choices)
+#    submit = SubmitField('Submit')
 
 class NameForm(FlaskForm):
     name = StringField('What is your name?', validators=[DataRequired()])
@@ -71,9 +78,7 @@ def pie_chart():
     colors = [ "#F7464A", "#46BFBD", "#FDB45C", "#FEDCBA","#ABCDEF", "#DDDDDD", "#ABCABC"  ]
     return render_template('pieChart.html', set=zip(values, labels, colors))
 
-def preproc_stacked(info):
-    features = ['Modality','Age','OrgCode','Anatomy']
-    feature = features[0]
+def preproc_stacked(info, feature='Modality'):
     labels = info[feature].unique()
     show = []
     noshow = []
@@ -93,10 +98,21 @@ def preproc_stacked(info):
 
     return labels, data, stack
 
-@app.route('/StackedCharts')
+class FeatForm(FlaskForm):
+    feature = SelectField('Features', choices = feature_tup)
+    submit = SubmitField('Submit')
+
+@app.route('/StackedCharts', methods=['GET', 'POST'])
 def stacked_chart():
-    labels, data, stack = preproc_stacked(info)
-    return render_template('StackedChart.html', labels=labels, data=data, stack=stack)
+    form = FeatForm()
+
+    if form.validate_on_submit():
+        feature = form.feature.data
+        #feature = request.args.get("selector", 'Modality')
+        labels, data, stack = preproc_stacked(info, feature)
+        return render_template('StackedChart.html', labels=labels, data=data, stack=stack, form=form)
+    labels, data, stack = preproc_stacked(info, features[0])
+    return render_template('StackedChart.html', labels=labels, data=data, stack=stack, form=form)
 
 @app.route('/calendar')
 def calendar():
