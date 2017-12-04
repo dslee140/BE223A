@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-
-
 {% block title %} Live Demo {% endblock %}
 
 {% block page_content %}
@@ -13,60 +11,10 @@
 
 {% if predicted %}
 
-
-<script src="./jquery.hottie.js"></script>
-
-
 <div id="table" class="col-lg-8">
-  {{html_code|safe}}
+  {{html_table|safe}}
 </div>
 
 {% else %} No prediction yet! {% endif %}
 
-<script>
-$(function(){
-  $(".dataframe td").hottie({
-    colorArray : [
-        "#63BE7B",
-        "#FBE983",
-        "#F8696B"
-    ]
-    });
-  });
-</script>
-
-<!--
-<table class="table">
-  <thead>
-    <tr>
-      <th scope="col">#</th>
-      <th scope="col">Monday</th>
-      <th scope="col">Tuesday</th>
-      <th scope="col">Wednesday</th>
-      <th scope="col">Thursday</th>
-      <th scope="col">Friday</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th scope="row">1</th>
-      <td>Mark</td>
-      <td>Otto</td>
-      <td>@mdo</td>
-    </tr>
-    <tr>
-      <th scope="row">2</th>
-      <td>Jacob</td>
-      <td>Thornton</td>
-      <td>@fat</td>
-    </tr>
-    <tr>
-      <th scope="row">2</th>
-      <td>Jacob</td>
-      <td>Thornton</td>
-      <td>@fat</td>
-    </tr>
-  </tbody>
-</table>
--->
 {% endblock %}
