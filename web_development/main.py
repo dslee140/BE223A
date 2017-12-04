@@ -10,8 +10,6 @@ from wtforms.fields.html5 import DateField
 from wtforms.validators import DataRequired
 import livedemo as lvdm
 
-
-
 class NameForm(FlaskForm):
     name = StringField('What is your name?', validators=[DataRequired()])
     submit = SubmitField('Submit')
