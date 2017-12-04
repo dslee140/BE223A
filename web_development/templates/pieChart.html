@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+
+{% block page_content %}
+
+<!-- import plugin script -->
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.js'></script>
+
+<div class='page-header'>
+  <h1>Flask PieChart</h1>
+</div>
+
+<!-- pie chart canvas element -->
+<canvas id="chart" width="600" height="400"></canvas>
+<script>
+   var pieData = [
+            {% for item,label,colors in set %}
+                {
+                    value: {{item}},
+                    label: "{{label}}",
+                    color : "{{colors}}"
+                },
+                {% endfor %}
+
+
+         ];
+
+   // get pie chart canvas
+   var mychart = document.getElementById("chart").getContext("2d");
+
+   steps = 10
+   max = 10
+   // draw pie chart
+   new Chart(document.getElementById("chart").getContext("2d")).Pie(pieData);
+
+</script>
+{% endblock %}
