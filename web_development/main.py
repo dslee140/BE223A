@@ -82,7 +82,7 @@ def pie_chart():
     return render_template('pieChart.html', set=zip(values, labels, colors))
 
 def preproc_stacked(info, feature='Modality'):
-    labels = info[feature].unique()
+    labels = sorted(info[feature].unique())
     show = []
     noshow = []
 
@@ -121,7 +121,7 @@ def stacked_chart():
 def calendar():
     return render_template("calendar.html")
 
-  
+
 # Live demo route
 @app.route('/livedemo', methods=['GET', 'POST'])
 def livedemo():
