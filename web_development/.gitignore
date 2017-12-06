@@ -1,2 +1,4 @@
 # Ignore the files in directory data
 /data/
+# Ignore macOS custom files
+.DS_Store
