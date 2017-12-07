@@ -8,6 +8,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, IntegerField, SelectField
 from wtforms.fields.html5 import DateField
 from wtforms.validators import DataRequired
+import markdown
 # Demo form
 import numpy as np
 import xgboost as xgb
@@ -31,7 +32,7 @@ class NameForm(FlaskForm):
 
 
 content = ""
-with open("readme.md", "r") as f:
+with open("12.6 Algorithm Refinement.md", "r") as f:
      content = f.read()
 
 
@@ -40,6 +41,7 @@ app.config['SECRET_KEY'] = 'iridescent'
 bootstrap = Bootstrap(app)
 Misaka(app) # To use markdown in the template
 
+"""
 @app.route('/', methods=['GET', 'POST'])
 def index():
     name = None
@@ -48,7 +50,7 @@ def index():
         name = form.name.data
         form.name.data = ''
     return render_template('index.html', form=form, name=name)
-
+"""
 
 @app.route('/user/<name>')
 def user(name):
@@ -57,7 +59,9 @@ def user(name):
 
 @app.route('/home')
 def home():
-    return render_template('home.html',text=content)
+    contents = content
+    contents = Markup(markdown.markdown(contents))
+    return render_template('home.html',content = contents)
 
 @app.route('/BarCharts')
 def bar_chart():
@@ -155,7 +159,7 @@ def preprocess_user_data(age, gender, modality, orgcode, day, hour):
     return X_array
 
 # Live demo route
-@app.route('/livedemo', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def livedemo():
     form = DemoForm()
     prob = None
