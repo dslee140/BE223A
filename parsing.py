@@ -6,10 +6,10 @@ from datetime import datetime
 import time
 from bisect import bisect 
 
-def parse_datetime(raw_datetime):
+def parse_datetime(raw_datetime, dtformat):
     if len(raw_datetime)<5:
         return np.nan, 365, np.nan, np.nan    
-    datetime_obj = datetime.strptime(raw_datetime,'%m/%d/%Y %H:%M')
+    datetime_obj = datetime.strptime(raw_datetime,dtformat) #'%m/%d/%Y %H:%M'
     return datetime_obj.weekday(), datetime_obj.timetuple().tm_yday, datetime_obj.hour, datetime_obj
 
 
@@ -84,11 +84,12 @@ def get_label(cancel_list, valid_reason):
 
 
 
-def parsing(data_raw_fname):
+def parsing(data_raw_fname, encoding, dtformat):
     a=time.time()
     print('Reading %s'%data_raw_fname)
     #data_raw_fname = 'be223a_dataset.csv'
-    data_raw = pd.read_csv(data_raw_fname)
+#    data_raw = pd.read_csv(data_raw_fname)
+    data_raw = pd.read_csv(data_raw_fname, encoding = encoding)
     raw_datetime = data_raw['ScheduledDTTM_D']
 
     num_samples = raw_datetime.shape[0]
@@ -108,7 +109,7 @@ def parsing(data_raw_fname):
     
 
     for i,rd in enumerate(data_raw['ScheduledDTTM_D']):
-        weekday[i],ddofyr[i],timeofday[i], dtobjs[i]=parse_datetime(rd)
+        weekday[i],ddofyr[i],timeofday[i], dtobjs[i]=parse_datetime(rd,dtformat)
         #tdata[i,:], dtobjs[i]=parse_datetime(rd)
 
 
