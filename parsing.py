@@ -1,3 +1,4 @@
+from parsing_icd9 import *
 import pandas as pd
 import numpy as np
 import scipy as sp
@@ -84,7 +85,7 @@ def get_label(cancel_list, valid_reason):
 
 
 
-def parsing(data_raw_fname, encoding, dtformat):
+def parsing(data_raw_fname, encoding, dtformat, pt_featurelist):
     a=time.time()
     print('Reading %s'%data_raw_fname)
     #data_raw_fname = 'be223a_dataset.csv'
@@ -102,11 +103,13 @@ def parsing(data_raw_fname, encoding, dtformat):
 
 
     featurelist = ['Minimum Temperature', 'Maximum Temperature', 'Average Temperature', 'Precipitation']
-    pt_featurelist = ['Patient ID','Exam ID', 'Age','Gender']
+    #pt_featurelist = ['Patient ID','Exam ID', 'Age','Gender']
+    
     patientlist = data_raw[pt_featurelist]
     
     features_pt = parse_patient(patientlist)
     
+    icd9_grp = parse_icd9(data_raw['icd9'])
 
     for i,rd in enumerate(data_raw['ScheduledDTTM_D']):
         weekday[i],ddofyr[i],timeofday[i], dtobjs[i]=parse_datetime(rd,dtformat)
@@ -120,8 +123,8 @@ def parsing(data_raw_fname, encoding, dtformat):
 
     label = get_label(data_raw['ReasonDesc'], ['CANCELLED BY PT', 'PT NO SHOW'])
     features_exam = pd.concat([
-        data_raw[['Exam ID','Patient ID', 'Gender','Age','OrgCode','Modality','Anatomy','SubSpecialty']],
-        pd.DataFrame({'Weekday':weekday, 'Timeofday':bizdescr,'Datetime Obj':dtobjs,'Label':label}),
+        data_raw[pt_featurelist+['OrgCode','Modality','Anatomy','SubSpecialty']],
+        pd.DataFrame({'Weekday':weekday, 'Timeofday':bizdescr, 'Dayofyear':ddofyr,'Datetime Obj':dtobjs,'Label':label, 'ICD Group':icd9_grp}),
         weatherdf
                          ],axis=1)
 
