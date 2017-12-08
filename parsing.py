@@ -21,7 +21,28 @@ def bizhour(hh):
 def get_descr_bizhour(hhmat):
     return np.array(list(map(bizhour, hhmat)))
 
-def load_weather(weatherfilename, featurelist):
+
+def parse_patient2(patientlist):
+    pt_featurelist = patientlist.columns
+    plg = patientlist.groupby(patientlist[pt_featurelist[0]])
+    patient_parsed = pd.DataFrame([],dtype=object)
+    for pf in pt_featurelist[1:]:
+        patient_parsed=pd.concat([patient_parsed,pd.DataFrame({pf:plg[pf].apply(np.array)})],axis=1)
+    return patient_parsed
+
+def parse_patient(patientlist):
+    pt_featurelist = patientlist.columns
+    keys = patientlist.values[:,0]
+    values = patientlist.values[:,1:]
+    ukeys,index=np.unique(keys,True)
+    ptDF = pd.DataFrame({pt_featurelist[0]:ukeys})
+
+    for i, pf in enumerate(pt_featurelist[1:]):
+        ptDF = pd.concat([ptDF, pd.DataFrame(np.array(np.split(values[:,i],index[1:])),columns=[pf])],axis=1)
+    return ptDF
+
+
+def parse_weather(weatherfilename, featurelist):
     dummylines=2
     i=0
     count = 0
@@ -80,27 +101,31 @@ def parsing(data_raw_fname):
 
 
     featurelist = ['Minimum Temperature', 'Maximum Temperature', 'Average Temperature', 'Precipitation']
-
+    pt_featurelist = ['Patient ID','Exam ID', 'Age','Gender']
+    patientlist = data_raw[pt_featurelist]
+    
+    features_pt = parse_patient(patientlist)
+    
 
     for i,rd in enumerate(data_raw['ScheduledDTTM_D']):
         weekday[i],ddofyr[i],timeofday[i], dtobjs[i]=parse_datetime(rd)
         #tdata[i,:], dtobjs[i]=parse_datetime(rd)
 
 
-    weathermaster = load_weather('CA045115.txt', featurelist)
+    weathermaster = parse_weather('CA045115.txt', featurelist)
     weatherdf = query_weather(ddofyr,weathermaster)
     bizdescr = get_descr_bizhour(timeofday)
 
 
     label = get_label(data_raw['ReasonDesc'], ['CANCELLED BY PT', 'PT NO SHOW'])
-    features = pd.concat([
-        data_raw[['Gender','Age','OrgCode','Modality','Anatomy','SubSpecialty']],
+    features_exam = pd.concat([
+        data_raw[['Exam ID','Patient ID', 'Gender','Age','OrgCode','Modality','Anatomy','SubSpecialty']],
         pd.DataFrame({'Weekday':weekday, 'Timeofday':bizdescr,'Datetime Obj':dtobjs,'Label':label}),
         weatherdf
                          ],axis=1)
 
     print('Processed in %.3f seconds.'% (time.time()-a))
-    return features
+    return features_pt, features_exam, weathermaster
 
 if __name__ == '__main__':
     import sys
