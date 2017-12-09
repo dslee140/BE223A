@@ -129,6 +129,7 @@ def parsing(data_raw_fname, encoding, dtformat,
 
 
     weathermaster = parse_weather('CA045115.txt', featurelist)
+    weathermaster['Dayofyear'] = weathermaster.index
     weatherdf = query_weather(ddofyr,weathermaster)
     bizdescr = get_descr_bizhour(timeofday)
 
