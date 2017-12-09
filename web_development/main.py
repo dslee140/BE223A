@@ -8,7 +8,8 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, IntegerField, SelectField
 from wtforms.fields.html5 import DateField
 from wtforms.validators import DataRequired
-#import livedemo as lvdm
+import livedemo as lvdm
+import markdown
 
 # Demo form
 import numpy as np
@@ -34,7 +35,7 @@ class NameForm(FlaskForm):
 
 
 content = ""
-with open("readme.md", "r") as f:
+with open("12.6 Algorithm Refinement.md", "r") as f:
      content = f.read()
 
 
@@ -60,7 +61,10 @@ def user(name):
 
 @app.route('/home')
 def home():
-    return render_template('home.html',text=content)
+    contents = content
+    contents = Markup(markdown.markdown(contents))
+    return render_template('home.html', content = contents)
+
 
 @app.route('/BarCharts')
 def bar_chart():
