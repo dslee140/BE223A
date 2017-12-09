@@ -23,7 +23,7 @@ def get_descr_bizhour(hhmat):
     return np.array(list(map(bizhour, hhmat)))
 
 
-def parse_patient2(patientlist):
+def parse_patient3(patientlist):
     pt_featurelist = patientlist.columns
     plg = patientlist.groupby(patientlist[pt_featurelist[0]])
     patient_parsed = pd.DataFrame([],dtype=object)
@@ -31,7 +31,7 @@ def parse_patient2(patientlist):
         patient_parsed=pd.concat([patient_parsed,pd.DataFrame({pf:plg[pf].apply(np.array)})],axis=1)
     return patient_parsed
 
-def parse_patient(patientlist):
+def parse_patient2(patientlist):
     pt_featurelist = patientlist.columns
     keys = patientlist.values[:,0]
     values = patientlist.values[:,1:]
@@ -41,6 +41,17 @@ def parse_patient(patientlist):
     for i, pf in enumerate(pt_featurelist[1:]):
         ptDF = pd.concat([ptDF, pd.DataFrame(np.array(np.split(values[:,i],index[1:])),columns=[pf])],axis=1)
     return ptDF
+
+def parse_patient(patientlist):
+    features_pt = patientlist.drop_duplicates(subset=patientlist.columns[0])
+    return features_pt
+
+def rename_columns(df):
+    colnames = df.columns.tolist()
+    for i, cn in enumerate(colnames):
+        colnames[i] = cn.replace(' ', '_')
+    df.columns = colnames
+    return df
 
 
 def parse_weather(weatherfilename, featurelist):
@@ -84,7 +95,6 @@ def get_label(cancel_list, valid_reason):
     return labels
 
 
-
 def parsing(data_raw_fname, encoding, dtformat, pt_featurelist):
     a=time.time()
     print('Reading %s'%data_raw_fname)
@@ -108,7 +118,8 @@ def parsing(data_raw_fname, encoding, dtformat, pt_featurelist):
     patientlist = data_raw[pt_featurelist]
     
     features_pt = parse_patient(patientlist)
-    
+    #features_pt = data_raw[pt_featurelist].drop_duplicates(subset='Patient ID')
+
     icd9_grp = parse_icd9(data_raw['icd9'])
 
     for i,rd in enumerate(data_raw['ScheduledDTTM_D']):
@@ -129,7 +140,7 @@ def parsing(data_raw_fname, encoding, dtformat, pt_featurelist):
                          ],axis=1)
 
     print('Processed in %.3f seconds.'% (time.time()-a))
-    return features_pt, features_exam, weathermaster
+    return rename_columns(features_pt), rename_columns(features_exam), rename_columns(weathermaster)
 
 if __name__ == '__main__':
     import sys
