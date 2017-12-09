@@ -35,8 +35,9 @@ class NameForm(FlaskForm):
 
 
 content = ""
-with open("12.6 Algorithm Refinement.md", "r") as f:
-     content = f.read()
+
+#with open("12.6 Algorithm Refinement.md", "r") as f:
+#     content = f.read()
 
 
 app = Flask(__name__)

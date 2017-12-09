@@ -26,17 +26,22 @@
   </div>
 </div>
 
-<div class="row">
-  <div id="chart1">
-    chart1
+<div id = "analytics-charts" class="row">
+  <div id="hospital-chart" class="col-lg-6">
+    Hospital
   </div>
-  <div id="chart2">
-    chart2
+  <div id="modality-chart" class="col-lg-6">
+    Modality
   </div>
-  <div id="chart3">
-    chart3
-  </div>
+</div>
 
+<div id = "past-weeks" class="row">
+  <div id="weekm2" class="col-lg-6">
+    week minus 2
+  </div>
+  <div id="weekm1" class="col-lg-6">
+    week minus 1
+  </div>
 </div>
 
 
@@ -140,6 +145,10 @@
 
   function load_patient_form(){
     $('#patient-form').show();
+  }
+
+  function create_charts(orgcode, modality){
+
   }
 
   $(function() {
