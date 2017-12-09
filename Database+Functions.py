@@ -48,10 +48,10 @@ def type_col(col_type):
     return type1
 
 
-# In[12]:
+# In[4]:
 
 
-def generate_string(tablename, df, primarykey):
+def generate_string(tablename, df, primarykey, foreignkey):
     
     """ Function to generate the SQL command as a string. This function can be used when only primary keys have to be created and there are no foreign keys associated.
     
@@ -67,99 +67,42 @@ def generate_string(tablename, df, primarykey):
     """
     
     columnnames=list(df.columns.values)
+    columnnames=[item for item in columnnames if item not in foreignkey]
     
     sql_string="CREATE TABLE IF NOT EXISTS"+ " "+ tablename + "("
-      
-    for i in range(len(columnnames)):
+    
+ 
         
+    for i in range(len(columnnames)):
+
         if i==len(columnnames)-1:
             col=columnnames[i]
             col_type=df[columnnames[i]].dtype
-        
+
             if col==primarykey:
                 coltype=type_col(col_type)
                 sql_string = sql_string + col + " " + coltype + " " + "PRIMARY KEY" + " " + ")" + ";" 
             else:
                 coltype=type_col(col_type)
                 sql_string= sql_string + col + " " + coltype + " " + ")" + ";"
-        
+
         else:
-            
+
             col=columnnames[i]
             col_type=df[columnnames[i]].dtype
-        
+
             if col==primarykey:
                 coltype=type_col(col_type)
                 sql_string = sql_string + col + " " + coltype + " " + "PRIMARY KEY" + ","
+
             else:
                 coltype=type_col(col_type)
                 sql_string= sql_string + col + " " + coltype + ","
-    
+
     return (sql_string)
 
 
-# In[13]:
-
-
-def generate_string_foreign(tablename, df, primarykey, foreignkey, foreigntable, foreigncolumn):
-    
-    """ Function to generate the SQL command as a string. This function can be used when a table has to be created with primary and foreign keys.
-    
-    Arguments:
-    tablename (char): Name of the table to be created in the database
-    df (dataframe): Parsed dataframe output from which field names for the database will be extracted from the column names
-    primarykey (char): Primary unique key associated with the table, this should be one of the columnnames from the dataframe
-    foreignkey (char): Name of the column in the table which will be the foreignkey
-    foreigntable (char): Name of the parent table which contains the association of the foreignkey 
-    foreigncolumn (char): Name of the associated column in the foreigntable 
-    
-    Returns:
-    An SQL command as a string which can be executed to create tables
-    
-    """
-    
-    columnnames=list(df.columns.values)
-    
-    sql_string="CREATE TABLE IF NOT EXISTS"+ " "+ tablename + "("
-    
-    for i in range(len(columnnames)):
-        
-        if i==len(columnnames)-1:
-            col=columnnames[i]
-            col_type=df[columnnames[i]].dtype
-        
-            if col==primarykey:
-                coltype=type_col(col_type)
-                sql_string = sql_string + col + " " + coltype + " " + "PRIMARY KEY" + " " + ")" + ";"
-            elif col==foreignkey:
-                coltype=type_col(col_type)
-                sql_string= sql_string + col + " " + coltype + ","
-                sql_string = sql_string + "FOREIGN KEY" + " " + "(" + foreignkey + ")" + " " + "REFERENCES" + " " + foreigntable + " " + "(" + foreigncolumn + ")" + " " + ")" + ";"
-                
-            else:
-                coltype=type_col(col_type)
-                sql_string= sql_string + col + " " + coltype + " " + ")" + ";"
-        
-        else:
-            
-            col=columnnames[i]
-            col_type=df[columnnames[i]].dtype
-        
-            if col==primarykey:
-                coltype=type_col(col_type)
-                sql_string = sql_string + col + " " + coltype + " " + "PRIMARY KEY" + ","
-            elif col==foreignkey:
-                coltype=type_col(col_type)
-                sql_string= sql_string + col + " " + coltype + ","
-                sql_string = sql_string + "FOREIGN KEY" + " " + "(" + foreignkey + ")" + " " + "REFERENCES" +" " + foreigntable + " " + "(" + foreigncolumn + ")" + ","
-            else:
-                coltype=type_col(col_type)
-                sql_string= sql_string + col + " " + coltype + ","
-    
-    return (sql_string)
-
-
-# In[6]:
+# In[5]:
 
 
 def create_table(database, create_new_table_string):
@@ -181,7 +124,7 @@ def create_table(database, create_new_table_string):
     connection.close()
 
 
-# In[7]:
+# In[6]:
 
 
 def push_dataframe(df,database, tablename):
@@ -202,7 +145,7 @@ def push_dataframe(df,database, tablename):
     connection.close()
 
 
-# In[8]:
+# In[7]:
 
 
 def query_data(database, query):
@@ -222,4 +165,26 @@ def query_data(database, query):
     connection.commit()
     connection.close()
     return data
+
+
+# In[56]:
+
+
+def foreignkey(tablename, foreignkey, foreigntable, foreignid):
+    #col_type=originaldf[foreignkey].dtype
+    #coltype=type_col(col_type)
+    
+    string = "ALTER TABLE" + " "+ tablename + " "+"add COLUMN" + " "+ foreignkey + " "+ "integer" + " " + "REFERENCES" + " " + foreigntable + "(" + foreignid + ")"
+    return string
+
+
+# In[13]:
+
+
+def create_key(database, foreignstring):
+    connection = sqlite3.connect(database)
+    cursor=connection.cursor()
+    cursor.execute(foreignstring)
+    connection.commit()
+    connection.close()
 
