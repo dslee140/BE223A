@@ -2,6 +2,8 @@
 # coding: utf-8
 
 # In[47]:
+import warnings
+warnings.filterwarnings('ignore')
 
 from parsing import *
 from database_functions import *
@@ -267,19 +269,24 @@ def prob_cm (test):
     print('Model Analysis processed in %.3f seconds.'% (time.time()-a))
     return df, groups
 
-def create_df(feat1, feat2, data, merge1, merge2, fk1, fk2):
-    data = table_merge(feat1, data, merge1, fk1)
-    data = table_merge(feat2, data, merge2, fk2)   
+def create_df(data, merge1, merge2, fk1, fk2):
+    data = table_merge(data, merge1, fk1)
+    data = table_merge(data, merge2, fk2)   
     return data
 
-def table_merge(features, data, merge, foreignk):
+def table_merge(data, merge, foreignk):
+    features = list(merge)
+    features.remove(foreignk)
     for i in features:
-        data = merge_columns(data, merge, foreignk, i)
+        data = merge_columns(data, merge, foreignk, str(i))
     return data
 
 
-def run_model(data, k, gridsearch = True):
+def run_model(data, k, gridsearch = True, exam_id = 'Exam_ID', pt_id = 'Patient_ID', drops = ['Datetime Obj']):
     a = time.time()
+    
+    ids = data[[exam_id, pt_id]]
+    data = data.drop(drops +[exam_id, pt_id], axis = 1)
     
     #preprocess the data: ENN
     train, trainlab, test, test_nlab, testlab = model_preprocess(data)
@@ -315,10 +322,20 @@ def run_model(data, k, gridsearch = True):
     
     prob, groups = prob_cm(test)
     
+    m = dict(zip(
+    ids.index.values.tolist(),
+    ids.Exam_ID.values.tolist()
+    ))
+
+    results = test[['Probabilities', 'Predictions']]
+    results['Exam_ID'] = [m.get(i, 'supplemental') for i in results.index]
+    results
+
+    
     ### One more function: push results to DB (both labels and probabilities) 
     
     print('Pipeline completed in %.3f seconds.'% (time.time()-a))
     
-    return test, prob, groups, evalstats
+    return results, test, prob, groups, evalstats
 
 
