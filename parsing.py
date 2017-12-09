@@ -95,7 +95,8 @@ def get_label(cancel_list, valid_reason):
     return labels
 
 
-def parsing(data_raw_fname, encoding, dtformat, pt_featurelist):
+def parsing(data_raw_fname, encoding, dtformat, 
+           exam_id = 'Exam ID', pt_id = 'Patient ID', age = 'Age', gender = 'Gender'):
     a=time.time()
     print('Reading %s'%data_raw_fname)
     #data_raw_fname = 'be223a_dataset.csv'
@@ -113,7 +114,7 @@ def parsing(data_raw_fname, encoding, dtformat, pt_featurelist):
 
 
     featurelist = ['Minimum Temperature', 'Maximum Temperature', 'Average Temperature', 'Precipitation']
-    #pt_featurelist = ['Patient ID','Exam ID', 'Age','Gender']
+    pt_featurelist = [pt_id, age, gender]
     
     patientlist = data_raw[pt_featurelist]
     
@@ -134,7 +135,7 @@ def parsing(data_raw_fname, encoding, dtformat, pt_featurelist):
 
     label = get_label(data_raw['ReasonDesc'], ['CANCELLED BY PT', 'PT NO SHOW'])
     features_exam = pd.concat([
-        data_raw[pt_featurelist+['OrgCode','Modality','Anatomy','SubSpecialty']],
+        data_raw[[exam_id, pt_id]+['OrgCode','Modality','Anatomy','SubSpecialty']],
         pd.DataFrame({'Weekday':weekday, 'Timeofday':bizdescr, 'Dayofyear':ddofyr,'Datetime Obj':dtobjs,'Label':label, 'ICD Group':icd9_grp}),
         weatherdf
                          ],axis=1)
