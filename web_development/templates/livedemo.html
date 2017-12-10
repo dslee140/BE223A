@@ -4,8 +4,17 @@
 {% block title %} Live Demo {% endblock %}
 
 {% block page_content %}
-{{ wtf.quick_form(form) }}
 
-{% if prob %} Probability =  {{ prob}} {% else %} No prediction yet {% endif %}
+<div id="form" class="col-lg-4">
+  {{ wtf.quick_form(form) }}
+</div>
+
+{% if predicted %}
+
+<div id="table" class="col-lg-8">
+  {{html_table|safe}}
+</div>
+
+{% else %} No prediction yet! {% endif %}
 
 {% endblock %}

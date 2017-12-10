@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, make_response
+from flask import Flask, render_template, request, make_response, jsonify
 from flask import Markup, redirect
 from flask_bootstrap import Bootstrap
 from flask_misaka import Misaka
@@ -8,18 +8,23 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, IntegerField, SelectField
 from wtforms.fields.html5 import DateField
 from wtforms.validators import DataRequired
+import livedemo as lvdm
+from app_calendar import initialize_data, parse_datetime, generate_timeslots, predict_probability
+from datetime import datetime
 import markdown
+
 # Demo form
 import numpy as np
-import xgboost as xgb
+#import xgboost as xgb
 import pickle
 
-info=pd.read_csv('../withLabel.csv')
+#info=pd.read_csv('../withLabel.csv')
 #TODO This will be modified as long as database is set up
-info['date'], info['time'] = info['CompletedDTTM_D'].str.split(' ', 1).str
-info=info[['Modality','Age','OrgCode','Anatomy','date','Labels']]
-features = ['Modality','Age','OrgCode','Anatomy']
-feature_tup = [(feature, feature) for feature in features]
+#info['date'], info['time'] = info['CompletedDTTM_D'].str.split(' ', 1).str
+#info=info[['Modality','Age','OrgCode','Anatomy','date','Labels']]
+#features = ['Modality','Age','OrgCode','Anatomy']
+#feature_tup = [(feature, feature) for feature in features]
+
 
 
 #class ChartForm(FlaskForm):
@@ -83,7 +88,7 @@ def pie_chart():
     return render_template('pieChart.html', set=zip(values, labels, colors))
 
 def preproc_stacked(info, feature='Modality'):
-    labels = info[feature].unique()
+    labels = sorted(info[feature].unique())
     show = []
     noshow = []
 
@@ -102,9 +107,9 @@ def preproc_stacked(info, feature='Modality'):
 
     return labels, data, stack
 
-class FeatForm(FlaskForm):
-    feature = SelectField('Features', choices = feature_tup)
-    submit = SubmitField('Submit')
+#class FeatForm(FlaskForm):
+#    feature = SelectField('Features', choices = feature_tup)
+#    submit = SubmitField('Submit')
 
 @app.route('/StackedCharts', methods=['GET', 'POST'])
 def stacked_chart():
@@ -123,61 +128,116 @@ def calendar():
     return render_template("calendar.html")
 
 
+# Live demo route
+#@app.route('/livedemo', methods=['GET', 'POST'])
+#def livedemo():
+#    # form instance
+#    form = lvdm.DemoForm()
+    # Initialize variables
+#    prediction_html_table = None
+#    predicted = False
+#    if form.validate_on_submit():
+        # Extract form data
+#        age, gender, modality, orgcode = lvdm.process_demo_form(form)
+        # Send data to get prediction table
+#        prediction_html_table = lvdm.predict_week(age, gender, modality, orgcode)
+#        predicted = True
+
+# Load hospital_map
+hospital_map = pickle.load(open("./data/hospital_map.dat", "rb"))
+
+@app.route('/modalities_json')
+def modalities_json():
+    '''
+    Gets orgcode returns modalities
+    '''
+    orgcode = request.args.get('orgcode')
+    if orgcode == 'Choose':
+        modalities = ['Choose']
+    else:
+        modalities = ['Choose']+list(hospital_map[orgcode].keys())
+    return jsonify(result = modalities )
+
+@app.route('/departments_json')
+def departments_json():
+    '''
+    Gets orgcode and modality returns departments
+    '''
+    orgcode = request.args.get('orgcode')
+    modality = request.args.get('modality')
+    departments = ['Choose']+hospital_map[orgcode][modality]
+    return jsonify(result = departments )
+
+@app.route('/calendar_json')
+def calendar_json():
+    orgcode = request.args.get('orgcode')
+    modality = request.args.get('modality')
+    dept = request.args.get('departmentcode')
+    # The initial date on the week calendar hard-coded, to be updated when data are current
+    initial_date = datetime(3246,11,27)
+    table_data, days, ts_times = generate_timeslots(orgcode, modality, dept, initial_date)
+    columns_names = [' ']+ days
+    table = {
+        'columns_names' : columns_names,
+        'row_names': ts_times,
+        'rows' : table_data
+    }
+    return jsonify(result = table )
+
+@app.route('/_patient_json')
+def patient_json():
+    exam_id = request.args.get('exam_id')
+    # Look in database for the exam_id and pull information of the patient
+    patient_info = {
+        'name': "John",
+        'telephone': 1112223333,
+        'email': 'john@gmail.com',
+        'gender': 'Male',
+        'age': 83
+    }
+    return jsonify(result = patient_info)
 
 
 
-# Modalities in the order they appear in the one-hot encoding
-modalities = np.array(['CR', 'CT', 'DX', 'MG', 'MR', 'NM', 'OT', 'PR', 'PT', 'RF', 'RG', 'SR', 'US', 'XA'])
-modalities_choices = [(modal, modal) for modal in modalities] # For the label appearing full names of the modality can be found
-# Orgcodes in the order they appear in the one-hot encoding
-orgcodes = np.array(['ASM', 'AWW', 'CCHS', 'CKHC', 'JSMO', 'MBIP', 'MP', 'MP1', 'MP1P', 'MP2P', 'MP3',
- 'RCPN', 'RICP', 'SHC', 'SMH', 'SMO', 'SMWG', 'WWH'])
+# Retrieve data from database
+# Let's set up just a list for now
+orgcodes = ['Choose']+list(hospital_map.keys())
 orgcodes_choices = [(org, org) for org in orgcodes]
-feature_names = ['Age', 'Weekday', 'OrgCode_ASM', 'OrgCode_AWW', 'OrgCode_CCHS', 'OrgCode_CKHC', 'OrgCode_JSMO', 'OrgCode_MBIP', 'OrgCode_MP', 'OrgCode_MP1', 'OrgCode_MP1P', 'OrgCode_MP2P', 'OrgCode_MP3', 'OrgCode_RCPN', 'OrgCode_RICP', 'OrgCode_SHC', 'OrgCode_SMH', 'OrgCode_SMO', 'OrgCode_SMWG', 'OrgCode_WWH', 'Modality_CR', 'Modality_CT', 'Modality_DX', 'Modality_MG', 'Modality_MR', 'Modality_NM', 'Modality_OT', 'Modality_PR', 'Modality_PT', 'Modality_RF', 'Modality_RG', 'Modality_SR', 'Modality_US', 'Modality_XA', 'hour', 'Gender']
+class FiltersForm(FlaskForm):
+    orgcode = SelectField('Organization Code', choices = orgcodes_choices)
+    modality = SelectField('Exam Modality', choices = [('Choose', 'Choose')])
+    departmentcode = SelectField('Department Code', choices = [('Choose', 'Choose')])
 
-class DemoForm(FlaskForm):
-    name = StringField('Name of the patient', validators=[DataRequired()])
+class PatientForm(FlaskForm):
     age = IntegerField('Age', validators=[DataRequired()])
     gender = SelectField('Gender', choices = [('1', 'Male'), ('0', 'Female')])
-    modality = SelectField('Exam Modality', choices = modalities_choices)
-    orgcode = SelectField('Organization Code', choices = orgcodes_choices)
-    #date = DateField('What is the date?', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
-def preprocess_user_data(age, gender, modality, orgcode, day, hour):
-    # Process the one-hot encoded data
-    orgcode_array = (orgcodes == orgcode)
-    modality_array = (modalities == modality)
-    # Process continuous data
-    age_array = np.array([age])
-    day_array = np.array([day])
-    hour_array = np.array([hour])
-    gender_array = np.array([gender])
+@app.route('/dashboard')
+def dashboard():
+    form = FiltersForm()
+    patient_form = PatientForm()
+    return render_template('dashboard.html' , form =form)
 
-    X_array = np.concatenate([age_array, day_array, orgcode_array, modality_array, hour_array, gender_array])
-    X_array = np.array([X_array]).astype(float)
-    return X_array
 
-# Live demo route
-@app.route('/', methods=['GET', 'POST'])
-def livedemo():
-    form = DemoForm()
-    prob = None
-    if form.validate_on_submit():
-        age = form.age.data
-        gender = int(form.gender.data)
-        modality = form.modality.data
-        orgcode = form.orgcode.data
-        X_test = preprocess_user_data(age, gender, modality, orgcode, 1, 17)
-        # Load ML model
-        model =pickle.load(open("./data/models/XGBoostMidtermModel.dat", "rb"))
-        # Predict
-        xgdmat_test = xgb.DMatrix(data = X_test, feature_names = feature_names)
-        Y_predict = model.predict(data = xgdmat_test)
-        prob = Y_predict
-        #name = form.name.data
-        #form.name.data = ''
-    return render_template('livedemo.html', form = form, prob = prob)
+@app.route('/_render_calendar')
+def calendar_data():
+    orgcode = 'ASM' #orgcode = request.args.get('orgcode')
+    modality = 'CR' #modality = request.args.get('modality')
+    timeslots, days = find_timeslots(orgcode, modality)
+    return jsonify(timeslots = timeslots, days = days)
+
+def find_timeslots(orgcode, modality):
+    # Retrieve data from database
+    # Let's set up just a list for now
+    timeslots = ["08:00", "10.00", "15:00"]
+    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+
+    return timeslots, days
+
+def render_calendar(orgcode, modality):
+
+    return None
 
 #@app.route('/dropdown')
 #def chart():
