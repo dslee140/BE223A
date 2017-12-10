@@ -9,6 +9,8 @@ from wtforms import StringField, SubmitField, IntegerField, SelectField
 from wtforms.fields.html5 import DateField
 from wtforms.validators import DataRequired
 import livedemo as lvdm
+from app_calendar import initialize_data, parse_datetime, generate_timeslots, predict_probability
+from datetime import datetime
 import markdown
 
 # Demo form
@@ -181,26 +183,15 @@ def get_department(orgcode, modality):
 def calendar_json():
     orgcode = request.args.get('orgcode')
     modality = request.args.get('modality')
+    dept = request.args.get('departmentcode')
     # Hard-code the initial date
-    initial_date = '3246-12-10'
-
+    initial_date = datetime(3246,11,27)
+    table_data, days, ts_times = generate_timeslots(orgcode, modality, dept, initial_date)
+    columns_names = [' ']+ days
     table = {
-        'columns_names' : ["", "A", "B"],
-        'row_names': [ "1", "2", "3"],
-        'rows' : [
-                    [
-                        {"status": 0, "exam_id":12345, "probability": 0.421},
-                        {"status": 1, "exam_id":54321, "probability": 0.433}
-                    ],
-                    [
-                        {"status": 1, "exam_id":1253, "probability": 0.768},
-                        {"status": 1, "exam_id":1363, "probability": 0.977}
-                    ],
-                    [
-                        {"status":2, "exam_id":None, "probability": 0.123},
-                        {"status":2, "exam_id":54684, "probability": 0.465721}
-                    ]
-        ]
+        'columns_names' : columns_names,
+        'row_names': ts_times,
+        'rows' : table_data
     }
     return jsonify(result = table )
 

@@ -58,7 +58,8 @@
   function load_table(){
     $.getJSON($SCRIPT_ROOT + '/calendar_json', {
       orgcode: $('#orgcode').val(),
-      modality: $('#modality').val()
+      modality: $('#modality').val(),
+      departmentcode: $('#departmentcode').val()
     }, function(data) {
       columns_names = data.result.columns_names;
       row_names = data.result.row_names;
