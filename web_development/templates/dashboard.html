@@ -11,10 +11,6 @@
         {{ wtf.quick_form(form) }}
     </div>
 
-    <div id= "patient-form" style="display:none">
-      <hr>
-      {{ wtf.quick_form(patient_form) }}
-    </div>
   </div>
 
   <div id= "calendar" class="col-lg-7">
@@ -82,7 +78,12 @@
           if (time_slot.status == 0){
             html+= "<td class='time_slot bg-grey' data-exam-id='"+time_slot.exam_id+"'> </td>";
           } else if (time_slot.status == 1) {
-            html+= "<td class='time_slot bg-blue' data-exam-id='"+time_slot.exam_id+"' data-toggle='tooltip' data-container='body' title = 'Cancel Probablity: "+time_slot.probability+"'></td>";
+            html+= "<td class='time_slot bg-blue' data-toggle='tooltip' data-container='body'"
+            html+= "data-exam-id='"+time_slot.exam_id+"'"
+            html+= "data-patient-id='"+time_slot.patient_id+"'"
+            html+= "data-age='"+time_slot.age+"'"
+            html+= "data-gender='"+time_slot.gender+"'"
+            html+= "title = 'Cancel Probablity: "+time_slot.probability+"'></td>";
           } else {
             html+= "<td class='time_slot'></td>";
           }
@@ -135,18 +136,16 @@
     html = '<div class="panel panel-default">';
     html += '<div class="panel-heading">Patient Information</div>';
     html += '<div class="panel-body">';
-    html += '<p>Name: '+text_info(patient_info.name)+'</p>';
+    html += '<p>Name: '+text_info(patient_info.patient_id)+'</p>';
     html += '<p>Age: '+text_info(patient_info.age)+'</p>';
     html += '<p>Gender: '+text_info(patient_info.gender)+'</p>';
-    html += '<p>Email: '+text_info(patient_info.email)+'</p>';
-    html += '<p>Phone number: '+text_info(patient_info.telephone)+'</p>';
+    html += '<p>Email: '+ text_info(patient_info.patient_id.slice(0,6)+"@gmail.com")+'</p>';
+    //html += '<p>Phone number: '+text_info(patient_info.telephone)+'</p>';
     html += '</div></div></div>';
     $('#patient-info').html(html);
   }
 
-  function load_patient_form(){
-    $('#patient-form').show();
-  }
+
 
   function create_charts(orgcode, modality){
 
@@ -183,16 +182,17 @@
 
     $('#departmentcode').change(function(){
       load_table();
-      load_patient_form();
       load_charts();
     });
 
     $("#calendar").on('click', '.time_slot', function(){
-      $.getJSON($SCRIPT_ROOT + '/_patient_json', {
-        exam_id: $(this).data( "examId" )
-      }, function(data) {
-        load_patient_info(data.result);
-      });
+      data = {
+        exam_id: $(this).data( "examId" ),
+        patient_id: $(this).data( "patientId" ),
+        age: $(this).data( "age" ),
+        gender:  $(this).data( "gender" )
+      };
+      load_patient_info(data);
     });
 
   });

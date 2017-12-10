@@ -47,6 +47,7 @@ app.config['SECRET_KEY'] = 'iridescent'
 bootstrap = Bootstrap(app)
 Misaka(app) # To use markdown in the template
 
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     name = None
@@ -144,6 +145,8 @@ def calendar():
 #        prediction_html_table = lvdm.predict_week(age, gender, modality, orgcode)
 #        predicted = True
 
+# Load hospital_map
+hospital_map = pickle.load(open("./data/hospital_map.dat", "rb"))
 
 @app.route('/modalities_json')
 def modalities_json():
@@ -151,14 +154,10 @@ def modalities_json():
     Gets orgcode returns modalities
     '''
     orgcode = request.args.get('orgcode')
-    # Retrieve data from database
-    # Let's set up just a dict for now
-    org_to_mod = {
-    'Choose' : ['Choose'],
-    'ASM' : ['Choose','CR', 'CT', 'DX', 'MG', 'MR', 'NM', 'OT', 'PR', 'PT', 'RF', 'RG', 'SR', 'US', 'XA'],
-    'AWW' : ['Choose', 'CR', 'CT', 'DX']
-    }
-    modalities = org_to_mod[orgcode]
+    if orgcode == 'Choose':
+        modalities = ['Choose']
+    else:
+        modalities = ['Choose']+list(hospital_map[orgcode].keys())
     return jsonify(result = modalities )
 
 @app.route('/departments_json')
@@ -168,23 +167,15 @@ def departments_json():
     '''
     orgcode = request.args.get('orgcode')
     modality = request.args.get('modality')
-
-    departments = get_department(orgcode, modality)
-
+    departments = ['Choose']+hospital_map[orgcode][modality]
     return jsonify(result = departments )
-
-def get_department(orgcode, modality):
-    ### query database
-    ### use this list instead
-    departments = ['Choose', 'CT', 'PCT', 'GEN']
-    return departments
 
 @app.route('/calendar_json')
 def calendar_json():
     orgcode = request.args.get('orgcode')
     modality = request.args.get('modality')
     dept = request.args.get('departmentcode')
-    # Hard-code the initial date
+    # The initial date on the week calendar hard-coded, to be updated when data are current
     initial_date = datetime(3246,11,27)
     table_data, days, ts_times = generate_timeslots(orgcode, modality, dept, initial_date)
     columns_names = [' ']+ days
@@ -198,7 +189,6 @@ def calendar_json():
 @app.route('/_patient_json')
 def patient_json():
     exam_id = request.args.get('exam_id')
-    print(exam_id)
     # Look in database for the exam_id and pull information of the patient
     patient_info = {
         'name': "John",
@@ -209,9 +199,11 @@ def patient_json():
     }
     return jsonify(result = patient_info)
 
+
+
 # Retrieve data from database
 # Let's set up just a list for now
-orgcodes = np.array(['Choose','ASM', 'AWW'])
+orgcodes = ['Choose']+list(hospital_map.keys())
 orgcodes_choices = [(org, org) for org in orgcodes]
 class FiltersForm(FlaskForm):
     orgcode = SelectField('Organization Code', choices = orgcodes_choices)
@@ -227,7 +219,8 @@ class PatientForm(FlaskForm):
 def dashboard():
     form = FiltersForm()
     patient_form = PatientForm()
-    return render_template('dashboard.html' , form =form, patient_form = patient_form)
+    return render_template('dashboard.html' , form =form)
+
 
 @app.route('/_render_calendar')
 def calendar_data():

@@ -5,7 +5,7 @@ import numpy as np
 def initialize_data():
     info=pd.read_csv('./data/be223a_dataset.csv')
     date_time=parse_datetime(info.ScheduledDTTM_D)
-    info1 = info[['Exam ID', 'OrgCode', 'Modality', 'DepartmentCode']]
+    info1 = info[['Exam ID', 'OrgCode', 'Modality', 'DepartmentCode', 'Age', 'Patient ID', 'Gender']]
     df= pd.DataFrame({'datetime':date_time})
     info=pd.concat([info1, df], axis=1)
     return info
@@ -35,7 +35,7 @@ def generate_timeslots(orgcode, modality, dept, dt_initial, threshold = 0.5):
     info_filt = info.loc[(info.OrgCode == orgcode) & (info.Modality == modality) & (info.DepartmentCode == dept)]
     # Time slots intervals duration to check
     ts_duration = dt.timedelta(minutes = 30)
-    n_ts = 10
+    n_ts = 31
     n_days = 7
     time_initial = dt.time(8,0)
     # initialize data array
@@ -58,15 +58,30 @@ def generate_timeslots(orgcode, modality, dept, dt_initial, threshold = 0.5):
             if info_ts.empty:
                 exam_id = None
                 probability  = None
+                patient_id = None
+                age = None
+                gender = None
                 status = 2
             else:
                 exam_id = int(info_ts.iloc[0]['Exam ID']) # Pick only the first examid
                 probability = predict_probability(exam_id)
+                patient_id = info_ts.iloc[0]['Patient ID']
+                age = int(info_ts.iloc[0]['Age'])
+                gender = info_ts.iloc[0]['Gender']
+                if gender == 'M':
+                    gender = 'Male'
+                if gender == 'F':
+                    gender = 'Female'
+                if gender == 'U':
+                    gender = 'Unknown'
                 if probability > threshold:
                     status = 1
                 else:
                     status = 0
-            data_dict = {"status": status, "exam_id":exam_id, "probability": probability}
+            data_dict = {
+                "status": status, "exam_id":exam_id, "probability": probability,
+                "patient_id":patient_id, "gender":gender, "age":age
+            }
             row.append(data_dict)
         table_data.append(row)
     table_data = list(map(list, zip(*table_data))) # To transpose it
