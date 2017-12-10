@@ -1,0 +1,13 @@
+.bg-grey{
+  background-color: #84888b;
+  cursor: pointer;
+}
+
+.bg-blue{
+  background-color: #1980cd;
+  cursor: pointer;
+}
+
+#calendar td{
+  padding:1px;
+}
