@@ -31,6 +31,20 @@ from sklearn.metrics import (confusion_matrix,
                              roc_curve, auc)
 
 def model_preprocess (data):
+    '''
+    Function that applies Edited Nearest Neighbors from the imblearn library to create a more balanced training set.
+    
+    Arguments:
+    data: dataframe with features and labels
+    
+    Returns:
+    train: the training set with more balanced label distribution
+    trainlab: the labels for the training set
+    test: test set with same label distribution as the original dataset
+    test_nlab: subset of test set that does not contain the labels
+    testlab: the labels for the test set
+    
+    '''
     a = time.time()
     #encoding
     features_encoded=pd.get_dummies(data).dropna()
@@ -54,8 +68,23 @@ def model_preprocess (data):
     return train, trainlab, test, test_nlab, testlab
 
 def gridsearch (t, trainlab, k):
+    '''
+    Performs GridSearch from sklearn library on the Random Forest Classifier model to generate ideal parameters according to f-1 score.
+    
+    Arguments:
+    t: the training set with more balanced label distribution
+    trainlab: the labels for the training set
+    k: the number of cases to subset from each label set
+    
+    Returns:
+    n_estimators: the number of decision trees to build for the ensemble model
+    max_features: the maximum amount of features to use for each tree (generated as a decimal)
+    class_weight: the type of weighting based on subset
+    criterion: the criterion used to split the tree; either 'gini' or 'entropy'
+    
+    '''
     a=time.time()
-    scoring = make_scorer(recall_score)
+    scoring = make_scorer(f1_score)
     t['Label'] = trainlab
     #randomly under sample
     neg = t[t['Label'] == 0].sample(k)
@@ -85,6 +114,17 @@ def gridsearch (t, trainlab, k):
     return n_estimators, max_features, class_weight, criterion
 
 def rfc_metrics(test):
+    '''
+    Evaluate the model and generate commonly-used metrics.
+    
+    Arguments:
+    test: the data frame with the labels and predictions attached
+    
+    Returns:
+    plot: ROC curve and score
+    details: an array containing true negatives, false positives, false negatives, true positives, accuracy, precision, recall, and F1 score.
+    
+    '''
     acc = accuracy_score(test.Label, test.Predictions)
     f1 = f1_score(test.Label, test.Predictions)
     prec = precision_score(test.Label, test.Predictions)
@@ -118,13 +158,26 @@ def rfc_metrics(test):
     plt.ylabel('True Positive Rate')
     plt.title('Receiver Operating Characteristic Example')
     plt.legend(loc="lower right")
+    
+    plt.savefig('ROC_curve.png')
+    
     plt.show()
+    
     
     show_confusion_matrix(test)
     
     return details
 
 def show_confusion_matrix(test):
+    '''
+    Plot the confusion matrix, along with metrics. Adapted from http://notmatthancock.github.io/2015/10/28/confusion-matrix.html 
+    
+    Arguments:
+    test: the data frame with the labels and predictions attached
+    
+    Returns:
+    plot: confusion matrix, along with commonly used scores.
+    '''
     
     C = confusion_matrix(test.Label, test.Predictions)
     tn, fp, fn, tp = C.ravel()
@@ -221,9 +274,68 @@ def show_confusion_matrix(test):
 
 
     plt.tight_layout()
+    plt.savefig('confusionmatrix_withscores.png')
     plt.show()
+    
+    
+    return None
+
+def feat_imprt(rf, test):
+    '''
+    Determines and plots the feature importances for the Random Forest model.
+    
+    Arguments:
+    rf: the Random Forest model
+    test: the data frame pased to the model
+    
+    Returns:
+    plot: bar plot displaying the importance of each feature, sorted in descending order
+    sort_features: a list of the features, sorted in descending order of importance
+    
+    '''
+    importances = rf.feature_importances_
+    std = np.std([tree.feature_importances_ for tree in rf.estimators_],
+                 axis=0)
+    indices = np.argsort(importances)[::-1]
+
+    # Print the feature ranking
+    print("Feature ranking:")
+
+    features = list(test)
+    sort_features = []
+    for f in range(test.shape[1]):
+    #    print("%d. feature %d (%f)" % (f + 1, indices[f], importances[indices[f]]))
+    #    print("%a: %f" % (features[indices[f]], importances[indices[f]]))
+        sort_features.append(features[indices[f]])
+
+    # Plot the feature importances of the forest
+    plt.figure(figsize=(30,10))
+    plt.title("Feature importances")
+    plt.bar(range(test.shape[1]), importances[indices],
+           color="teal", yerr=std[indices], align="center")
+    plt.xticks(range(test.shape[1]), sort_features, rotation = 90)
+    plt.xlim([-1, test.shape[1]])
+
+    plt.tick_params(axis='both', which='major', labelsize=8)
+    plt.savefig('feature_importances.png')
+    plt.show()
+    
+    
+    return sort_features
 
 def prob_cm (test):
+    '''
+    Displays the confusion matrix for each bin of predicted probability
+    
+    Arguments:
+    test: the data frame with the labels and predictions attached
+    
+    Returns:
+    plot: a plot showing the confusion matrix for each probability bin
+    prob: the confusion matrices for each probability bin
+    groups: a groupby object that contains the binning for the probabilities
+    
+    '''
     a=time.time()
     # Bin the data
     bins = np.linspace(0, 1, 10)
@@ -263,18 +375,48 @@ def prob_cm (test):
     plt.title('Confusion Matrix by Probability')
     plt.xticks(bins, ('10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%'))
     plt.legend((p1[0], p2[0], p3[0], p4[0]), ('TN', 'TP', 'FN', 'FP'), bbox_to_anchor=(1, 1))
+    
+    plt.savefig('probability_confusionmatrix.png')
 
     plt.show()
+    
     
     print('Model Analysis processed in %.3f seconds.'% (time.time()-a))
     return df, groups
 
 def create_df(data, merge1, merge2, fk1, fk2):
+    '''
+    Calls table_merge to merge data frames based on features.
+    
+    Arguments:
+    data: the data frame to which the merging frames will be appended
+    merge1: the first table to be merged
+    merge2: the second table to be merged
+    fk1: the key used to map merge1 to data
+    fk2: the key used to map merge1 to data
+    
+    Returns:
+    data: the merged data frame
+    
+    '''
     data = table_merge(data, merge1, fk1)
     data = table_merge(data, merge2, fk2)   
     return data
 
 def table_merge(data, merge, foreignk):
+    '''
+    Calls merge columns for every feature in a target data frame, resulting in a fully merged data frame.
+    
+    Arguments:
+    data: the data frame to which the merging frames will be appended
+    merge: the first table to be merged
+    foreignk: the key used to map merge1 to data
+    
+    Returns:
+    data: the merged data frame 
+    
+    '''
+    
     features = list(merge)
     features.remove(foreignk)
     for i in features:
@@ -282,7 +424,34 @@ def table_merge(data, merge, foreignk):
     return data
 
 
-def run_model(data, k, gridsearch = True, exam_id = 'Exam_ID', pt_id = 'Patient_ID', drops = ['Datetime Obj']):
+def run_model(data, k = 5000, tune_parameters = False, exam_id = 'Exam_ID', pt_id = 'Patient_ID', drops = ['Datetime Obj', 'Dayofyear']):
+    '''
+    Creates a separate data frame with patient IDs, Exam IDs, and the indices, called ids.
+    Calls model_preprocess to undersample the dominant class using Edited Nearest Neighbors, a technique that involves clustering the data, and choosing from those clusters. This outputs a test set with the same distribution as the total set, and a training set that is more balanced.
+    Runs the RandomForestClassifier from the sklearn library. If model_preprocess was run, it uses those parameters; if not, default parameters are specified from manual tuning. The function uses the builtin methods to predict the labels as well as the probabilities for each test case.
+    The function then performs a series of analyses:
+    rfc_metrics: generates the standard measures of performance (accuracy, precision, recall F-1), and plots the ROC AUC.
+    show_confusion_matrix: with those metrics generated above, this function generates a confusion matrix and reports them, along with the confusion matrix.
+    prob_cm: this takes the probabilities predicted from the model, puts them into bins (e.g., 0.1-0.2) and plots the false and true values for each bin.
+    feat_imprt: this takes the fitted Random Forest, and plots the features in order of their importance to the classifier model. This function then outputs:
+    
+    Arguments:
+    data: the relevant data frame
+    tune_parameters: boolean that determines if Grid Search will be run. Default to False
+    exam_id: the column header for exam IDs. Default set to "Exam_ID"
+    pt_id: the column header for patient IDs. Default set to "Patient_ID"
+    drops: the columns to be dropped from this dataset.
+    
+    Returns:
+    results: the probabilities and labels for each test case
+    prob: the confusion matrices for each probability bin
+    groups: a groupby object that contains the binning for the probabilities
+    test: the test dataset, with the labels attached
+    evalstats: an array with all of the evaluation statistics
+    sort_features: a sorted list of features, ranked by importance
+    
+    '''
+    
     a = time.time()
     
     ids = data[[exam_id, pt_id]]
@@ -291,7 +460,7 @@ def run_model(data, k, gridsearch = True, exam_id = 'Exam_ID', pt_id = 'Patient_
     #preprocess the data: ENN
     train, trainlab, test, test_nlab, testlab = model_preprocess(data)
     
-    if gridsearch:
+    if tune_parameters:
         print('Running GridSearch. Tuned Parameters:')
         class_weight, criterion, max_features, n_estimators  = gridsearch(train, trainlab, k)
         train = train.drop('Label', axis=1)
@@ -313,6 +482,9 @@ def run_model(data, k, gridsearch = True, exam_id = 'Exam_ID', pt_id = 'Patient_
     
     rfc.fit(train, trainlab) 
     results = rfc.predict(test_nlab)
+    
+    sort_features = feat_imprt(rfc, test_nlab)
+    
     test['Predictions'] = results
     test['Probabilities'] = rfc.predict_proba(test_nlab)[:,1]
     
@@ -336,6 +508,6 @@ def run_model(data, k, gridsearch = True, exam_id = 'Exam_ID', pt_id = 'Patient_
     
     print('Pipeline completed in %.3f seconds.'% (time.time()-a))
     
-    return results, test, prob, groups, evalstats
+    return results, test, prob, groups, evalstats, sort_features
 
 

@@ -23,7 +23,7 @@ def get_descr_bizhour(hhmat):
     return np.array(list(map(bizhour, hhmat)))
 
 
-def parse_patient3(patientlist):
+def parse_patient2(patientlist):
     pt_featurelist = patientlist.columns
     plg = patientlist.groupby(patientlist[pt_featurelist[0]])
     patient_parsed = pd.DataFrame([],dtype=object)
@@ -31,7 +31,7 @@ def parse_patient3(patientlist):
         patient_parsed=pd.concat([patient_parsed,pd.DataFrame({pf:plg[pf].apply(np.array)})],axis=1)
     return patient_parsed
 
-def parse_patient2(patientlist):
+def parse_patient(patientlist):
     pt_featurelist = patientlist.columns
     keys = patientlist.values[:,0]
     values = patientlist.values[:,1:]
@@ -41,17 +41,6 @@ def parse_patient2(patientlist):
     for i, pf in enumerate(pt_featurelist[1:]):
         ptDF = pd.concat([ptDF, pd.DataFrame(np.array(np.split(values[:,i],index[1:])),columns=[pf])],axis=1)
     return ptDF
-
-def parse_patient(patientlist):
-    features_pt = patientlist.drop_duplicates(subset=patientlist.columns[0])
-    return features_pt
-
-def rename_columns(df):
-    colnames = df.columns.tolist()
-    for i, cn in enumerate(colnames):
-        colnames[i] = cn.replace(' ', '_')
-    df.columns = colnames
-    return df
 
 
 def parse_weather(weatherfilename, featurelist):
@@ -95,8 +84,14 @@ def get_label(cancel_list, valid_reason):
     return labels
 
 
-def parsing(data_raw_fname, encoding, dtformat, 
-           exam_id = 'Exam ID', pt_id = 'Patient ID', age = 'Age', gender = 'Gender'):
+def parse_patientjp(data, pt_featurelist):
+    patientlist = data[pt_featurelist]
+    patients = patientlist.drop_duplicates(subset='Patient ID')
+    return patients
+
+
+def parsing(data_raw_fname, encoding, dtformat,
+            exam_id = 'Exam ID', pt_id = 'Patient ID', age = 'Age', gender = 'Gender'):
     a=time.time()
     print('Reading %s'%data_raw_fname)
     #data_raw_fname = 'be223a_dataset.csv'
@@ -116,11 +111,12 @@ def parsing(data_raw_fname, encoding, dtformat,
     featurelist = ['Minimum Temperature', 'Maximum Temperature', 'Average Temperature', 'Precipitation']
     pt_featurelist = [pt_id, age, gender]
     
-    patientlist = data_raw[pt_featurelist]
+#    patientlist = data_raw[pt_featurelist]   
+#    features_pt = parse_patient(patientlist)
     
-    features_pt = parse_patient(patientlist)
-    #features_pt = data_raw[pt_featurelist].drop_duplicates(subset='Patient ID')
-
+#    features_pt = parse_patientjp(data_raw, pt_featurelist)
+    features_pt = data_raw[pt_featurelist].drop_duplicates(subset='Patient ID')
+    
     icd9_grp = parse_icd9(data_raw['icd9'])
 
     for i,rd in enumerate(data_raw['ScheduledDTTM_D']):
@@ -130,6 +126,7 @@ def parsing(data_raw_fname, encoding, dtformat,
 
     weathermaster = parse_weather('CA045115.txt', featurelist)
     weathermaster['Dayofyear'] = weathermaster.index
+    weathermaster.columns = ['mintemp', 'maxtemp', 'avtemp', 'precip', 'Dayofyear']
     weatherdf = query_weather(ddofyr,weathermaster)
     bizdescr = get_descr_bizhour(timeofday)
 
@@ -137,12 +134,14 @@ def parsing(data_raw_fname, encoding, dtformat,
     label = get_label(data_raw['ReasonDesc'], ['CANCELLED BY PT', 'PT NO SHOW'])
     features_exam = pd.concat([
         data_raw[[exam_id, pt_id]+['OrgCode','Modality','Anatomy','SubSpecialty']],
-        pd.DataFrame({'Weekday':weekday, 'Timeofday':bizdescr, 'Dayofyear':ddofyr,'Datetime Obj':dtobjs,'Label':label, 'ICD Group':icd9_grp}),
-        weatherdf
+        pd.DataFrame({'Weekday':weekday, 'Timeofday':bizdescr, 'Dayofyear':ddofyr,'Datetime Obj':dtobjs,'Label':label, 'ICD Group':icd9_grp})
                          ],axis=1)
 
+
+    features_pt.rename(columns={'Patient ID':'Patient_ID'}, inplace=True)
+    features_exam.rename(columns={'Exam ID':'Exam_ID', 'Patient ID':'Patient_ID', 'ICD Group': 'ICD_Group'}, inplace=True)
     print('Processed in %.3f seconds.'% (time.time()-a))
-    return rename_columns(features_pt), rename_columns(features_exam), rename_columns(weathermaster)
+    return features_pt, features_exam, weathermaster
 
 if __name__ == '__main__':
     import sys
