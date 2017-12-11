@@ -505,8 +505,6 @@ def run_model(data, appointments_s, k = 5000, tune_parameters = False, exam_id =
     test['Predictions'] = results
     test['Probabilities'] = rfc.predict_proba(test_nlab)[:,1]
     
-    print(list(test_nlab))
-    print(list(validate))
     validate['Predictions'] = rfc.predict(validate)
     validate['Probabilities'] = rfc.predict_proba(validate.drop('Predictions', axis = 1))[:,1]
     
