@@ -51,12 +51,15 @@
   $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 </script>
 
+# For displaying charts
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.0/Chart.bundle.min.js"></script>
+
 <!--Dashboard Javascript functions-->
 <script src="/static/js/dashboard_functions.js"></script>
 <script>
 // To run when document is ready
 $(function() {
-
+  load_charts();
   $('#orgcode').change(function() {
     if($('#orgcode').val() == "Choose"){
       reset_modalities();
@@ -86,7 +89,6 @@ $(function() {
 
   $('#departmentcode').change(function(){
     load_table();
-    load_charts();
   });
 
   $("#calendar").on('click', '.time_slot', function(){
