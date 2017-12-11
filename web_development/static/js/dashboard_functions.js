@@ -112,6 +112,7 @@ function load_org_chart(chart_data){
   labels =chart_data.labels;
   data_show = chart_data.Show;
   data_noshow = chart_data.NoShow;
+  title = 'Organization'
   create_stacked_chart(chart_id, labels, data_show, data_noshow)
 }
 function load_modalities_chart(chart_data){
@@ -122,10 +123,11 @@ function load_modalities_chart(chart_data){
   labels =chart_data.labels;
   data_show = chart_data.Show;
   data_noshow = chart_data.NoShow;
+  title = 'Modality'
   create_stacked_chart(chart_id, labels, data_show, data_noshow)
 }
 
-function create_stacked_chart(chart_id, labels, data_show, data_noshow){
+function create_stacked_chart(chart_id, labels, data_show, data_noshow, title){
      // stacked chart data
     var config = {
     type: 'bar',
@@ -144,6 +146,10 @@ function create_stacked_chart(chart_id, labels, data_show, data_noshow){
       }]
     },
     options: {
+      title: {
+            display: true,
+            text: title
+      },
       scales: {
         xAxes: [{
           stacked: true

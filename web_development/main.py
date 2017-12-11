@@ -118,28 +118,28 @@ def for_modality_charts(feature='Modality'):
     if orgcode == 'Choose':
         data = dict()
     else:
-            data = dict()
+        data = dict()
 
-            labels = sorted(info[feature].unique())
-            show = []
-            noshow = []
+        labels = sorted(info[feature].unique())
+        show = []
+        noshow = []
 
-            for f in labels:
-                info_temp = info[info['OrgCode'] == orgcode]
-                completed_count = list(info_temp[info_temp[feature] == f]['Labels'] == 0).count(True)
-                noshow_count = list(info[info[feature] == f]['Labels'] == 1).count(True)
-                show.append(completed_count)
-                noshow.append(noshow_count)
+        for f in labels:
+            info_temp = info[info['OrgCode'] == orgcode]
+            completed_count = list(info_temp[info_temp[feature] == f]['Labels'] == 0).count(True)
+            noshow_count = list(info[info[feature] == f]['Labels'] == 1).count(True)
+            show.append(completed_count)
+            noshow.append(noshow_count)
 
-            data['Show'] = show
-            data['NoShow'] = noshow
+        data['Show'] = show
+        data['NoShow'] = noshow
 
-            stack = []
-            for key in data:
-                stack.append(key)
+        stack = []
+        for key in data:
+            stack.append(key)
 
-            data['stack'] = stack
-            data['labels'] = labels
+        data['stack'] = stack
+        data['labels'] = labels
 
     return jsonify(result = data)
 
