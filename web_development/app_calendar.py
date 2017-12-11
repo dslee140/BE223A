@@ -10,6 +10,7 @@ def initialize_data():
     info=pd.concat([info1, df], axis=1)
     return info
 
+
 def parse_datetime(raw_datetime):
     '''
     Takes a list or pandas.Series with strings and converts them to datetime when in this format '%m/%d/%Y %H:%M'.
@@ -97,3 +98,7 @@ def generate_timeslots(orgcode, modality, dept, dt_initial, threshold = 0.5):
 def predict_probability(exam_id):
     ## Should be done from the model
     return np.random.random(1)[0]
+
+if __name__ == '__main__':
+    datetime_list = parse_datetime(pd.Series(['12/10/2017 19:22']))
+    print(datetime_list)
