@@ -27,7 +27,12 @@ def day_timeslots(orgcode, modality, dept, date_time):
 
     return day_info
 
+<<<<<<< HEAD
 def parse_datetime(raw_datetime, dt_format= '%m/%d/%Y %H:%M'):
+=======
+
+def parse_datetime(raw_datetime):
+>>>>>>> b887d3a69db7ae1f891677a0efaca8022345fc5b
     '''
     Takes a list or pandas.Series with strings and converts them to datetime when in this format '%m/%d/%Y %H:%M'.
     The output is a python list
@@ -121,3 +126,7 @@ def predict_probability(exam_id):
     info_day = query_data("./data/db/223ADB3.db", query)
     #print(query)
     return np.random.random(1)[0]
+
+if __name__ == '__main__':
+    datetime_list = parse_datetime(pd.Series(['12/10/2017 19:22']))
+    print(datetime_list)

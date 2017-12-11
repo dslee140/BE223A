@@ -12,6 +12,7 @@ import livedemo as lvdm
 from app_calendar import *
 from datetime import datetime
 import markdown
+from timeslot_chart import timeslots_for_charts
 
 # Demo form
 import numpy as np
@@ -88,6 +89,7 @@ def pie_chart():
     values = [10,9,8,7,6,4,7,8]
     colors = [ "#F7464A", "#46BFBD", "#FDB45C", "#FEDCBA","#ABCDEF", "#DDDDDD", "#ABCABC"  ]
     return render_template('pieChart.html', set=zip(values, labels, colors))
+
 
 @app.route('/for_orgcode_charts_json')
 def for_orgcode_charts(feature='OrgCode'):
@@ -232,13 +234,21 @@ def calendar_json():
     # The initial date on the week calendar hard-coded, to be updated when data are current
     initial_date = datetime(3246,12,10)
     table_data, days, ts_times = generate_timeslots(orgcode, modality, dept, initial_date)
+
+    ts_data = timeslots_for_charts(orgcode, modality, dept, initial_date)
+
+    prev_week1 = initial_date - timedelta(7)
+    ts_data2 = timeslots_for_charts(orgcode, modality, dept, prev_week1)
+
     columns_names = [' ']+ days
     table = {
         'columns_names' : columns_names,
         'row_names': ts_times,
-        'rows' : table_data
+        'rows' : table_data,
+        'ts_data': ts_data,
+        'ts_data2': ts_data2
     }
-    return jsonify(result = table )
+    return jsonify(result = table)
 
 @app.route('/_patient_json')
 def patient_json():
@@ -273,7 +283,7 @@ class PatientForm(FlaskForm):
 def dashboard():
     form = FiltersForm()
     patient_form = PatientForm()
-    return render_template('dashboard.html' , form =form)
+    return render_template('dashboard.html', form =form)
 
 
 @app.route('/_render_calendar')
