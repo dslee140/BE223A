@@ -465,7 +465,7 @@ def run_model(data, k = 5000, tune_parameters = False, exam_id = 'Exam_ID', pt_i
         class_weight, criterion, max_features, n_estimators  = gridsearch(train, trainlab, k)
         train = train.drop('Label', axis=1)
     else:
-        class_weight, criterion, max_features, n_estimators  = 'balanced', 'entropy', 0.8, 50
+        class_weight, criterion, max_features, n_estimators  = 'balanced', 'entropy', 0.5, 110
         print("GridSearch was not run. Default parameters selected:" + "\n" +
               "- Class Weight: "+ class_weight + "\n" +
               "- Criterion: " + criterion + "\n" +
