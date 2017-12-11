@@ -24,10 +24,10 @@
 </div>
 
 <div id = "analytics-charts" class="row">
-  <div id="hospital-chart" class="col-lg-6">
-    <iframe src="/StackedCharts"></iframe>
+  <div id="hospital-div" class="col-lg-6">
+
   </div>
-  <div id="modality-chart" class="col-lg-6">
+  <div id="modality-div" class="col-lg-6">
     Modality
   </div>
 </div>
@@ -46,20 +46,24 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script>window.jQuery || document.write('<script src="{{
   url_for('static', filename='jquery.js') }}">\x3C/script>')</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.0/Chart.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.3/js/bootstrap-select.min.js"></script>
 <!--Initialize root directory-->
 <script type=text/javascript>
   $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 </script>
-
-# For displaying charts
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.0/Chart.bundle.min.js"></script>
 
 <!--Dashboard Javascript functions-->
 <script src="/static/js/dashboard_functions.js"></script>
 <script>
 // To run when document is ready
 $(function() {
-  load_charts();
+  //Load the charts
+  $.getJSON($SCRIPT_ROOT + '/for_orgcode_charts_json', {
+  }, function(data) {
+    load_org_chart(data.result);
+  });
+
   $('#orgcode').change(function() {
     if($('#orgcode').val() == "Choose"){
       reset_modalities();
@@ -101,6 +105,10 @@ $(function() {
     load_patient_info(data);
   });
 });
+</script>
+
+<script>
+  create_stacked_chart("StackedChart", ["A", "B", "C"], [0, 5, 10], [5,10,0]);
 </script>
 
 {% endblock %}

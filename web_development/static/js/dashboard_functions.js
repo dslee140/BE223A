@@ -1,5 +1,5 @@
 function load_table(){
-  html = "<center><img src='/static/images/loading.gif' style = 'width: 50px; margin: 0 auto; margin: 100px;'> </img></center>"
+  html = "<center><img src='/static/img/loading.gif' style = 'width: 50px; margin: 0 auto; margin: 100px;'> </img></center>"
   $('#calendar').html(html);
   $.getJSON($SCRIPT_ROOT + '/calendar_json', {
     orgcode: $('#orgcode').val(),
@@ -99,11 +99,56 @@ function load_patient_info(patient_info){
   $('#patient-info').html(html);
 }
 
-function load_charts(){
-  html = '<div> Is load_charts working? </div>';
-  console.log("Is load_charts working?");
+function load_org_chart(chart_data){
+  html = '<canvas id="StackedChart" width="600" height="400"></canvas>';
+  $('#hospital-div').html(html);
+  chart_id = 'hospital-chart';
+  labels =chart_data.labels;
+  data_show = chart_data.Show;
+  data_noshow = chart_data.NoShow;
+  create_stacked_chart(chart_id, labels, data_show, data_noshow)
+}
+function load_modalities_chart(chart_data){
+  html = '<canvas id="StackedChart" width="600" height="400"></canvas>';
+  $('#modality-div').html(html);
+  chart_id = 'modality-chart';
+  labels =chart_data.labels;
+  data_show = chart_data.Show;
+  data_noshow = chart_data.NoShow;
+  create_stacked_chart(chart_id, labels, data_show, data_noshow)
 }
 
-function create_charts(orgcode, modality){
-
+function create_stacked_chart(chart_id, labels, data_show, data_noshow){
+     // stacked chart data
+    var config = {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        type: 'bar',
+        label: 'Show',
+        backgroundColor: "#FF8800",
+        data: data_show,
+      }, {
+        type: 'bar',
+        label: "No show",
+        backgroundColor: "#4285F4",
+        data: data_noshow,
+      }]
+    },
+    options: {
+      scales: {
+        xAxes: [{
+          stacked: true
+        }],
+        yAxes: [{
+          stacked: true
+        }]
+      }
+    }
+  };
+   // get stacked chart canvas
+   var mychart = document.getElementById(chart_id).getContext("2d");
+   new Chart(mychart, config);
+   alert("chart runs");
 }
