@@ -90,7 +90,7 @@ def pie_chart():
     return render_template('pieChart.html', set=zip(values, labels, colors))
 
 @app.route('/for_orgcode_charts_json')
-def for_orgcode_charts(info, feature='OrgCode'):
+def for_orgcode_charts(feature='OrgCode'):
     labels = sorted(info[feature].unique())
     show = []
     noshow = []
@@ -114,35 +114,35 @@ def for_orgcode_charts(info, feature='OrgCode'):
     return jsonify(result = data)
 
 @app.route('/for_modality_charts_json')
-def for_modality_charts(info, feature='Modality'):
+def for_modality_charts(feature='Modality'):
     orgcode = request.args.get('orgcode')
     if orgcode == 'Choose':
         data = dict()
-        else:
-            data = dict()
+    else:
+        data = dict()
 
-            labels = sorted(info[feature].unique())
-            show = []
-            noshow = []
+        labels = sorted(info[feature].unique())
+        show = []
+        noshow = []
 
-            for f in labels:
-                info_temp = info[info['OrgCode'] == orgcode]
-                completed_count = list(info_temp[info_temp[feature] == f]['Labels'] == 0).count(True)
-                noshow_count = list(info[info[feature] == f]['Labels'] == 1).count(True)
-                show.append(completed_count)
-                noshow.append(noshow_count)
+        for f in labels:
+            info_temp = info[info['OrgCode'] == orgcode]
+            completed_count = list(info_temp[info_temp[feature] == f]['Labels'] == 0).count(True)
+            noshow_count = list(info[info[feature] == f]['Labels'] == 1).count(True)
+            show.append(completed_count)
+            noshow.append(noshow_count)
 
-            data['Show'] = show
-            data['NoShow'] = noshow
+        data['Show'] = show
+        data['NoShow'] = noshow
 
-            stack = []
-            for key in data:
-                stack.append(key)
+        stack = []
+        for key in data:
+            stack.append(key)
 
-            data['stack'] = stack
-            data['labels'] = labels
+        data['stack'] = stack
+        data['labels'] = labels
 
-    return jsonify(result = data) 
+    return jsonify(result = data)
 
 def preproc_stacked(info, feature='Modality'):
     labels = sorted(info[feature].unique())
