@@ -99,7 +99,10 @@ function load_patient_info(patient_info){
   $('#patient-info').html(html);
 }
 
-
+function load_charts(orgcode, modality){
+  html = '<div> Is load_charts working? </div>';
+  console.log(html);
+}
 
 function create_charts(orgcode, modality){
 

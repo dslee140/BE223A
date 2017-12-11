@@ -24,7 +24,7 @@
 
 <div id = "analytics-charts" class="row">
   <div id="hospital-chart" class="col-lg-6">
-    Hospital
+    hospital
   </div>
   <div id="modality-chart" class="col-lg-6">
     Modality
@@ -48,6 +48,7 @@
 <script type=text/javascript>
   $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 </script>
+<script src="/static/js/dashboard_functions.js"></script>
 
 <script type=text/javascript>
 
@@ -152,6 +153,7 @@
   }
 
   $(function() {
+    load_charts();
 
     $('#orgcode').change(function() {
       if($('#orgcode').val() == "Choose"){
@@ -182,7 +184,6 @@
 
     $('#departmentcode').change(function(){
       load_table();
-      load_charts();
     });
 
     $("#calendar").on('click', '.time_slot', function(){

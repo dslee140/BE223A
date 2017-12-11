@@ -18,12 +18,12 @@ import numpy as np
 #import xgboost as xgb
 import pickle
 
-#info=pd.read_csv('../withLabel.csv')
+info=pd.read_csv('./data/withLabel.csv')
 #TODO This will be modified as long as database is set up
-#info['date'], info['time'] = info['CompletedDTTM_D'].str.split(' ', 1).str
-#info=info[['Modality','Age','OrgCode','Anatomy','date','Labels']]
-#features = ['Modality','Age','OrgCode','Anatomy']
-#feature_tup = [(feature, feature) for feature in features]
+info['date'], info['time'] = info['CompletedDTTM_D'].str.split(' ', 1).str
+info=info[['Modality','Age','OrgCode','Anatomy','date','Labels']]
+features = ['Modality','Age','OrgCode','Anatomy']
+feature_tup = [(feature, feature) for feature in features]
 
 
 
@@ -107,9 +107,9 @@ def preproc_stacked(info, feature='Modality'):
 
     return labels, data, stack
 
-#class FeatForm(FlaskForm):
-#    feature = SelectField('Features', choices = feature_tup)
-#    submit = SubmitField('Submit')
+class FeatForm(FlaskForm):
+    feature = SelectField('Features', choices = feature_tup)
+    submit = SubmitField('Submit')
 
 @app.route('/StackedCharts', methods=['GET', 'POST'])
 def stacked_chart():
@@ -213,7 +213,7 @@ class PatientForm(FlaskForm):
     gender = SelectField('Gender', choices = [('1', 'Male'), ('0', 'Female')])
     submit = SubmitField('Submit')
 
-@app.route('/dashboard')
+@app.route('/')
 def dashboard():
     form = FiltersForm()
     patient_form = PatientForm()
