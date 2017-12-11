@@ -8,6 +8,12 @@ import time
 from bisect import bisect 
 
 def parse_datetime(raw_datetime, dtformat):
+    """ Parses input raw date and time string into Python datetime object, given the format of raw datetime string
+    raw_datetime: string of raw date and time.
+    dtformat: string to specify format of raw_datetime. 
+    
+    returns day of week, day of year, hour in 24-hr format, Python datetime object.     
+    """    
     if len(raw_datetime)<5:
         return np.nan, 365, np.nan, np.nan    
     datetime_obj = datetime.strptime(raw_datetime,dtformat) #'%m/%d/%Y %H:%M'
@@ -15,35 +21,30 @@ def parse_datetime(raw_datetime, dtformat):
 
 
 def bizhour(hh):
+    """ Helper function for get_descr_bizhour to map a given hour to "business status", AM, PM, or OFF.  
+    hh: hour in 24-hr format
+    
+    returns business status, AM, PM, or OFF.
+    """
     biz = ['OFF','AM','PM','OFF']
     breakpoints = [8, 12, 17]
     return biz[bisect(breakpoints, hh)]
 
 def get_descr_bizhour(hhmat):
+    """ Uses helper bizhour to map an array of hours to "busines status", AM, PM, or OFF.
+    hhmat: Numpy array of hours
+    
+    returns Numpy array of business status, AM, PM, or OFF.
+    """
     return np.array(list(map(bizhour, hhmat)))
 
-
-def parse_patient2(patientlist):
-    pt_featurelist = patientlist.columns
-    plg = patientlist.groupby(patientlist[pt_featurelist[0]])
-    patient_parsed = pd.DataFrame([],dtype=object)
-    for pf in pt_featurelist[1:]:
-        patient_parsed=pd.concat([patient_parsed,pd.DataFrame({pf:plg[pf].apply(np.array)})],axis=1)
-    return patient_parsed
-
-def parse_patient(patientlist):
-    pt_featurelist = patientlist.columns
-    keys = patientlist.values[:,0]
-    values = patientlist.values[:,1:]
-    ukeys,index=np.unique(keys,True)
-    ptDF = pd.DataFrame({pt_featurelist[0]:ukeys})
-
-    for i, pf in enumerate(pt_featurelist[1:]):
-        ptDF = pd.concat([ptDF, pd.DataFrame(np.array(np.split(values[:,i],index[1:])),columns=[pf])],axis=1)
-    return ptDF
-
-
 def parse_weather(weatherfilename, featurelist):
+    """ Parses the raw weather file given the list of features, and text file of weather file. . 
+    weatherfilename: name of text file containing weather info.
+    featurelist: name of features of interest in the weather file. 
+    
+    returns Pandas dataframe of row as day of year [1,365], and column the weather features. 
+    """
     dummylines=2
     i=0
     count = 0
@@ -71,9 +72,21 @@ def parse_weather(weatherfilename, featurelist):
     return df
 
 def query_weather(doy, weatherdf):
+    """ Querys the weather given day of year, and weather dataframe from parse_weather. 
+    doy: Numpy array of day of the year
+    weatherdf: weather dataframe from parse_weather
+    
+    returns Pandas dataframe of weather for each day of year. 
+    """
     return weatherdf.iloc[doy-1].reset_index(drop=True)
 
 def get_label(cancel_list, valid_reason):
+    """ Creates label of patient no-show given a list of cancellation status for appointment data and valid no-show criteria. 
+    cancel_list: Pandas dataframe of cancelation status of appointment data 
+    valid_reason: Valid criteria of no-show
+    
+    returns binary Numpy array of shows (0) and no-shows (1). 
+    """
     ct = cancel_list.value_counts()
 
     labels = np.zeros(cancel_list.shape)
@@ -83,15 +96,25 @@ def get_label(cancel_list, valid_reason):
     labels=(labels>0).astype(int) #Cancel == 1
     return labels
 
-
-def parse_patientjp(data, pt_featurelist):
-    patientlist = data[pt_featurelist]
-    patients = patientlist.drop_duplicates(subset='Patient ID')
-    return patients
-
+def parse_patient(patientlist):
+    """ Parses the list of patient given the raw data
+    patientlist: The raw data relevant to patient, i.e., patient ID, age, and gender.
+    
+    returns pandas list of unique patient list with ID, age, and gender
+    """
+    features_pt = patientlist.drop_duplicates(subset=patientlist.columns[0])
+    return features_pt
 
 def parsing(data_raw_fname, encoding, dtformat,
             exam_id = 'Exam ID', pt_id = 'Patient ID', age = 'Age', gender = 'Gender'):
+    """ Parses the raw data for patient, appointment, and weather database. 
+    data_raw_fname: Name of raw data file. 
+    encoding: File encoding.
+    dtformat: The date and time format in the raw data file. 
+    exam_id, pt_id, age, gender: The feature names in the raw data for the respective features. 
+    
+    returns 3 Pandas parsed dataframes, respectively, for  patient, appointment, and weather. 
+    """
     a=time.time()
     print('Reading %s'%data_raw_fname)
     #data_raw_fname = 'be223a_dataset.csv'
@@ -110,12 +133,9 @@ def parsing(data_raw_fname, encoding, dtformat,
 
     featurelist = ['Minimum Temperature', 'Maximum Temperature', 'Average Temperature', 'Precipitation']
     pt_featurelist = [pt_id, age, gender]
+    patientlist = data_raw[pt_featurelist]
     
-#    patientlist = data_raw[pt_featurelist]   
-#    features_pt = parse_patient(patientlist)
-    
-#    features_pt = parse_patientjp(data_raw, pt_featurelist)
-    features_pt = data_raw[pt_featurelist].drop_duplicates(subset='Patient ID')
+    features_pt = parse_patient(patientlist)    
     
     icd9_grp = parse_icd9(data_raw['icd9'])
 
@@ -146,4 +166,10 @@ def parsing(data_raw_fname, encoding, dtformat,
 if __name__ == '__main__':
     import sys
     fname = sys.argv[1]
-    parsing(fname)
+    encoding = sys.argv[2]
+    dtformat = sys.argv[3]
+    exam_id = sys.argv[4]
+    pt_id = sys.argv[5]
+    age = sys.argv[6]
+    gender = sys.argv[7]
+    pt, appt, weather = parsing(fname, encoding, dtformat, exam_id, pt_id, age, gender)
