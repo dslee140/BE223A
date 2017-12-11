@@ -465,7 +465,7 @@ def run_model(data, k = 5000, tune_parameters = False, exam_id = 'Exam_ID', pt_i
         class_weight, criterion, max_features, n_estimators  = gridsearch(train, trainlab, k)
         train = train.drop('Label', axis=1)
     else:
-        class_weight, criterion, max_features, n_estimators  = 'balanced', 'entropy', 0.5, 110
+        class_weight, criterion, max_features, n_estimators  = 'balanced', 'entropy', 0.8, 50
         print("GridSearch was not run. Default parameters selected:" + "\n" +
               "- Class Weight: "+ class_weight + "\n" +
               "- Criterion: " + criterion + "\n" +
@@ -510,4 +510,99 @@ def run_model(data, k = 5000, tune_parameters = False, exam_id = 'Exam_ID', pt_i
     
     return results, test, prob, groups, evalstats, sort_features
 
+def num_overlap_hist (test, false_positives, false_negatives, feat):
+    plt.figure(figsize=(15,5))
+    xt,binst,pt=plt.hist(test[feat], normed=1, alpha = 0.3)
+    xp,binsp,pp=plt.hist(false_negatives[feat], normed=1, alpha = 0.3, color = 'y')
+    xn,binsn,pn=plt.hist(false_positives[feat], normed=1, alpha = 0.3, color = 'r')
+    print(feat)
+    plt.legend((pt[0], pp[0], pn[0]), ('Test Set', 'False Negatives (Cancellations)', 'False Positives (Shows)'),
+              bbox_to_anchor=(1, 1))
+    plt.show()
 
+def feature_bar(data, feat, color):
+    '''Function that creates overlapping histograms for numerical features in the dataset.
+    Arguments:
+    test: the output of the run_model function, which contains the test set appended with a predictions column
+    false_positives: the subset of test identified as false positives
+    false_negatives: the subset of test identified as false negatives
+    
+    Returns:
+    Histograms showing the distributions of data for the three specified subsets for each numerical feature
+    ''' 
+    sums = data.sum(axis=0)
+    df_sum = pd.DataFrame(sums)
+    df_sum['index'] = df_sum.index
+    
+    org = df_sum[df_sum['index'].str.contains(feat)]
+    org.columns = ['Sum', 'index']
+    total = np.sum(org.Sum)
+    org.Sum = org.Sum.divide(total)*100
+    
+    sums = np.array(org['Sum'])
+    bins=np.arange(len(org))
+
+    p1=plt.bar(bins,sums,1,color=color, alpha = 0.3)
+    plt.xticks(bins, (org.index), rotation = 90)
+    
+    return p1
+
+def cat_overlap_bars(test, false_positives, false_negatives, feat):
+    '''Function that creates overlapping bar plots for categorical features in the dataset.
+    Arguments:
+    test: the output of the run_model function, which contains the test set appended with a predictions column
+    false_positives: the subset of test identified as false positives
+    false_negatives: the subset of test identified as false negatives
+    
+    Returns:
+    Plots showing the distributions of data for the three specified subsets for each categorical feature
+    ''' 
+    plt.figure(figsize=(25,5))
+    pt = feature_bar(test, feat, 'b')
+    pn = feature_bar(false_positives, feat, 'y')
+    pp = feature_bar(false_negatives, feat, 'r')
+    plt.legend((pt[0], pp[0], pn[0]), ('Test Set', 'False Negatives (Cancellations)', 'False Positives (Shows)'),
+               bbox_to_anchor=(1, 1))
+    print(feat)
+    plt.show()
+    
+    return None
+
+def error_analysis_plots(df, test):
+    '''Function that outputs distributions of features for the test set, false positives, and false negatives.
+    Arguments:
+    df: the original data frame passed to the machine learning function run_model
+    test: the output of the run_model function, which contains the test set appended with a predictions column
+    
+    Returns:
+    Plots showing the distributions of data for the three specified subsets for each feature
+    false_positives: the subset of test identified as false positives
+    false_negatives: the subset of test identified as false negatives
+    '''
+    test.Weekday.astype(int)
+    newdf = test[test.Label != test.Predictions]
+    new_sums = pd.DataFrame(newdf.sum(axis=0))
+    false_negatives = newdf[newdf.Label == 1]
+    false_positives = newdf[newdf.Label == 0]
+    
+    features = list(df)
+    features.remove('Patient_ID')
+    features.remove('Exam_ID')
+    features.remove('Datetime Obj')
+    features.remove('Dayofyear')
+    features.remove('Label')
+    features_categorical = features[:6]
+    features_categorical.append('Gender')
+    features_categorical.append('Weekday')
+    features_num = features[6:]
+    features_num.remove('Gender')
+    
+    for i in features_categorical:
+        cat_overlap_bars(test, false_positives, false_negatives, i)
+
+    for i in features_num:
+        num_overlap_hist(test, false_positives, false_negatives, i)
+        
+    
+        
+    return false_negatives, false_positives
