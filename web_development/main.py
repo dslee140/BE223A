@@ -90,7 +90,7 @@ def pie_chart():
     return render_template('pieChart.html', set=zip(values, labels, colors))
 
 @app.route('/for_orgcode_charts_json')
-def for_orgcode_charts(info, feature='OrgCode'):
+def for_orgcode_charts(feature='OrgCode'):
     labels = sorted(info[feature].unique())
     show = []
     noshow = []
@@ -110,15 +110,14 @@ def for_orgcode_charts(info, feature='OrgCode'):
 
     data['stack'] = stack
     data['labels'] = labels
-
     return jsonify(result = data)
 
 @app.route('/for_modality_charts_json')
-def for_modality_charts(info, feature='Modality'):
+def for_modality_charts(feature='Modality'):
     orgcode = request.args.get('orgcode')
     if orgcode == 'Choose':
         data = dict()
-        else:
+    else:
             data = dict()
 
             labels = sorted(info[feature].unique())
@@ -142,9 +141,9 @@ def for_modality_charts(info, feature='Modality'):
             data['stack'] = stack
             data['labels'] = labels
 
-    return jsonify(result = data) 
+    return jsonify(result = data)
 
-def preproc_stacked(info, feature='Modality'):
+def preproc_stacked(feature='Modality'):
     labels = sorted(info[feature].unique())
     show = []
     noshow = []
