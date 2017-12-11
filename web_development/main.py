@@ -9,7 +9,7 @@ from wtforms import StringField, SubmitField, IntegerField, SelectField
 from wtforms.fields.html5 import DateField
 from wtforms.validators import DataRequired
 import livedemo as lvdm
-from app_calendar import initialize_data, parse_datetime, generate_timeslots, predict_probability
+from app_calendar import *
 from datetime import datetime
 import markdown
 
@@ -230,7 +230,7 @@ def calendar_json():
     modality = request.args.get('modality')
     dept = request.args.get('departmentcode')
     # The initial date on the week calendar hard-coded, to be updated when data are current
-    initial_date = datetime(3246,11,27)
+    initial_date = datetime(3246,12,10)
     table_data, days, ts_times = generate_timeslots(orgcode, modality, dept, initial_date)
     columns_names = [' ']+ days
     table = {
