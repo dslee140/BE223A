@@ -10,9 +10,9 @@ from wtforms.fields.html5 import DateField
 from wtforms.validators import DataRequired
 import livedemo as lvdm
 from app_calendar import *
-from datetime import datetime
+from datetime import datetime,timedelta
 import markdown
-from timeslot_chart import timeslots_for_charts
+from timeslot_chart import *
 
 # Demo form
 import numpy as np
@@ -237,7 +237,7 @@ def calendar_json():
 
     ts_data = timeslots_for_charts(orgcode, modality, dept, initial_date)
 
-    prev_week1 = initial_date - timedelta(7)
+    prev_week1 = initial_date - timedelta(days = 7)
     ts_data2 = timeslots_for_charts(orgcode, modality, dept, prev_week1)
 
     columns_names = [' ']+ days

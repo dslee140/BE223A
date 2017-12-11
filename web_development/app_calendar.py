@@ -7,6 +7,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0,parentdir)
 from database_functions import *
 
+
 def day_timeslots(orgcode, modality, dept, date_time):
     '''
     Arguments:
@@ -123,6 +124,7 @@ def predict_probability(exam_id):
     #print(query)
     return np.random.random(1)[0]
 
-if __name__ == '__main__':
-    datetime_list = parse_datetime(pd.Series(['12/10/2017 19:22']))
-    print(datetime_list)
+# Testing
+#if __name__ == '__main__':
+#    datetime_list = parse_datetime(pd.Series(['12/10/2017 19:22']))
+#    print(datetime_list)
