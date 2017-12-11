@@ -11,26 +11,18 @@
     <div id= "form">
         {{ wtf.quick_form(form) }}
     </div>
-
+    <div id= "patient-info"></div>
   </div>
 
-  <div id= "calendar" class="col-lg-7">
+  <div id= "calendar" class="col-lg-6"></div>
 
-  </div>
-
-  <div id= "patient-info" class="col-lg-3">
-
-  </div>
-</div>
-
-<div id = "analytics-charts" class="row">
-  <div id="hospital-div" class="col-lg-6">
-
-  </div>
-  <div id="modality-div" class="col-lg-6">
-    Modality
+  <div id = "analytics-charts" class="col-lg-4">
+    <div id="hospital-div" ></div>
+    <div id="modality-div" ></div>
   </div>
 </div>
+
+
 
 <div id = "past-weeks" class="row">
   <div id="weekm2" class="col-lg-6">
@@ -59,7 +51,7 @@
 // To run when document is ready
 $(function() {
   //Load the charts
-  $.getJSON($SCRIPT_ROOT + '/for_orgcode_charts_json', {
+  $.getJSON($SCRIPT_ROOT + '/for_orgcode_charts_json', { nodata:0
   }, function(data) {
     load_org_chart(data.result);
   });
@@ -74,6 +66,11 @@ $(function() {
       }, function(data) {
         load_modalities(data.result);
         reset_departments();
+      });
+      $.getJSON($SCRIPT_ROOT + '/for_modality_charts_json', {
+        orgcode: $('#orgcode').val()}, function(data) {
+          console.log(data);
+        load_modalities_chart(data.result);
       });
     };
   });

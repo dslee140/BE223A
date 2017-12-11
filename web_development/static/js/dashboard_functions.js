@@ -99,19 +99,26 @@ function load_patient_info(patient_info){
   $('#patient-info').html(html);
 }
 
+
 function load_org_chart(chart_data){
-  html = '<canvas id="StackedChart" width="600" height="400"></canvas>';
-  $('#hospital-div').html(html);
+  title = 'Organization';
   chart_id = 'hospital-chart';
+  //html = '<div class="panel panel-default">';
+  //html += '<div class="panel-heading">'+title+'</div>';
+  //html += '<div class="panel-body">';
+  html = '<canvas id="'+chart_id+'" width="600" height="400"></canvas>';
+  //html += '</div></div>';
+  $('#hospital-div').html(html);
   labels =chart_data.labels;
   data_show = chart_data.Show;
   data_noshow = chart_data.NoShow;
   create_stacked_chart(chart_id, labels, data_show, data_noshow)
 }
 function load_modalities_chart(chart_data){
-  html = '<canvas id="StackedChart" width="600" height="400"></canvas>';
-  $('#modality-div').html(html);
+  title = 'Modality';
   chart_id = 'modality-chart';
+  html = '<canvas id="'+chart_id+'" width="600" height="400"></canvas>';
+  $('#modality-div').html(html);
   labels =chart_data.labels;
   data_show = chart_data.Show;
   data_noshow = chart_data.NoShow;
@@ -150,5 +157,4 @@ function create_stacked_chart(chart_id, labels, data_show, data_noshow){
    // get stacked chart canvas
    var mychart = document.getElementById(chart_id).getContext("2d");
    new Chart(mychart, config);
-   alert("chart runs");
 }

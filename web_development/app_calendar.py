@@ -65,7 +65,7 @@ def generate_timeslots(orgcode, modality, dept, dt_initial, threshold = 0.5):
             else:
                 exam_id = int(info_ts.iloc[0]['Exam ID']) # Pick only the first examid
                 probability = predict_probability(exam_id)
-                patient_id = info_ts.iloc[0]['Patient ID']
+                patient_id = info_ts.iloc[0]['Patient ID'][0:10]
                 age = int(info_ts.iloc[0]['Age'])
                 gender = info_ts.iloc[0]['Gender']
                 if gender == 'M':
