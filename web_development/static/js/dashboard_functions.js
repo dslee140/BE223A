@@ -1,3 +1,4 @@
+// Function to load the calendar table and the two line charts from the previous weeks
 function load_table(){
   html = "<center><img src='/static/img/loading.gif' style = 'width: 50px; margin: 0 auto; margin: 100px;'> </img></center>"
   $('#calendar').html(html);
@@ -57,6 +58,7 @@ function load_table(){
   });
 }
 
+// Function to load the modalities list
 function load_modalities(modalities){
   var $el = $("#modality");
   $el.empty(); // remove old options
@@ -67,6 +69,7 @@ function load_modalities(modalities){
 
 }
 
+// Function to load the departments list
 function load_departments(departments){
   var $el = $("#departmentcode");
   $el.empty(); // remove old options
@@ -77,18 +80,22 @@ function load_departments(departments){
 
 }
 
+// Function to reset the departments list to only Choose
 function reset_departments(){
   $("#departmentcode").html('<option value="Choose">Choose</option>')
 }
 
+// Function to reset the modalities list to only Choose
 function reset_modalities(){
   $("#modality").html('<option value="Choose">Choose</option>')
 }
 
+// Function to decorate text as information (blue color)
 function text_info(text){
   return '<span class = "text-info">'+text+'</span>';
 }
 
+// Function to load patient information panel
 function load_patient_info(patient_info){
   html = '<div class="panel panel-default">';
   html += '<div class="panel-heading">Patient Information</div>';
@@ -102,6 +109,7 @@ function load_patient_info(patient_info){
   $('#patient-info').html(html);
 }
 
+// Function to load the organizations chart
 function load_org_chart(chart_data){
   chart_id = 'hospital-chart';
   html = '<canvas id="'+chart_id+'" width="600" height="600"></canvas>';
@@ -113,6 +121,8 @@ function load_org_chart(chart_data){
   title = 'Organization'
   create_stacked_chart(chart_id, labels, data_show, data_noshow, title)
 }
+
+// Function to load the modalities chart
 function load_modalities_chart(chart_data){
   chart_id = 'modality-chart';
   html = '<canvas id="'+chart_id+'" width="600" height="600"></canvas>';
@@ -125,6 +135,7 @@ function load_modalities_chart(chart_data){
   create_stacked_chart(chart_id, labels, data_show, data_noshow, title)
 }
 
+// Function to load the previous week chart
 function load_line_chart(chart_data){
   chart_id = 'week-1';
   html = '<canvas id="'+chart_id+'" width="600" height="400"></canvas>';
@@ -137,6 +148,7 @@ function load_line_chart(chart_data){
   create_line_chart(chart_id, labels, full_slots, slots_taken, title)
 }
 
+// Function to load the second to last week chart
 function load_line_chart2(chart_data){
   chart_id = 'week-2';
   html = '<canvas id="'+chart_id+'" width="600" height="400"></canvas>';
@@ -149,6 +161,7 @@ function load_line_chart2(chart_data){
   create_line_chart(chart_id, labels, full_slots, slots_taken, title)
 }
 
+// Function to  create a stacked chart
 function create_stacked_chart(chart_id, labels, data_show, data_noshow, title){
      // stacked chart data
     var config = {
@@ -187,6 +200,7 @@ function create_stacked_chart(chart_id, labels, data_show, data_noshow, title){
    new Chart(mychart, config);
 }
 
+// function to create an ovelaping line chart
 function create_line_chart(chart_id, labels, full_slots, slots_taken, title){
      // line chart data
     var config = {

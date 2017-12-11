@@ -10,12 +10,17 @@ from database_functions import *
 
 def day_timeslots(orgcode, modality, dept, date_time):
     '''
+    Queries the database for specific orgcode, modality, departmentcode and a single date. Returns
+    filtered data as a pandas.DataFrame.
     Arguments:
     ---------
     orgcode: str
     modality: str
     dept: str
     date_time: Datetime.Datetime
+    Returns:
+    -------
+    day_info: pandas.DataFrame
     '''
     query_day = str(date_time.date())
     query = "SELECT `Exam ID`, `OrgCode`, `Modality`, `DepartmentCode`, `Age`, `Patient ID`, `Gender`, `datetime`"
@@ -31,8 +36,15 @@ def day_timeslots(orgcode, modality, dept, date_time):
 
 def parse_datetime(raw_datetime, dt_format= '%m/%d/%Y %H:%M'):
     '''
-    Takes a list or pandas.Series with strings and converts them to datetime when in this format '%m/%d/%Y %H:%M'.
-    The output is a python list
+    Takes a pandas.Series with strings and converts them to datetime when in dt_format.
+    The output is a python list.
+    Arguments:
+    ---------
+    raw_datetime: pandas.Series
+    dt_format: str
+    Returns:
+    -------
+    datetime_list: list
     '''
     raw_datetime_list = raw_datetime.tolist()
     datetime_list = []
@@ -49,10 +61,24 @@ def parse_datetime(raw_datetime, dt_format= '%m/%d/%Y %H:%M'):
 
 #function to return Examid, Probability, Status for time slots in a week
 def generate_timeslots(orgcode, modality, dept, dt_initial, threshold = 0.5):
-    #info = initialize_data()
-    # Filter orgcode, modality, dept
-    #info_filt = info.loc[(info.OrgCode == orgcode) & (info.Modality == modality) & (info.DepartmentCode == dept)]
-    # Time slots intervals duration to check
+    '''
+    Gives data of timeslots of a week starting at dt_initial. The data are
+    status, exam_id, probability, patient_id, gender, age. status is 0
+    when probability <= 0.5, 1 when probability > 0.5 and 2 when the time
+    slot is not occupied
+    Arguments:
+    ---------
+    orgcode: str
+    modality: str
+    dept: str
+    dt_initial: Datetime.Datetime
+    threshold: float
+    Returns:
+    -------
+    table_data: dict
+    days: list
+    ts_times: list
+    '''
     ts_duration = dt.timedelta(minutes = 30)
     n_ts = 31
     n_days = 7
@@ -118,11 +144,21 @@ def generate_timeslots(orgcode, modality, dept, dt_initial, threshold = 0.5):
 
 
 def predict_probability(exam_id):
-    ## Should be done from the model
+    '''
+    Querying the database and finding the probability for a given exam_id
+    Arguments:
+    ---------
+    exam_id: str
+    Returns:
+    -------
+    probability: float
+    '''
     query = "SELECT Probabilities FROM results  WHERE Exam_ID = %s" %exam_id
     info_day = query_data("./data/db/223ADB3.db", query)
-    #print(query)
-    return np.random.random(1)[0]
+    print(query)
+    print(info_day)
+    probability = np.random.random(1)[0]
+    return probability
 
 # Testing
 #if __name__ == '__main__':
