@@ -1,17 +1,34 @@
 import datetime as dt
 import pandas as pd
 import numpy as np
+import os,sys,inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0,parentdir)
+from database_functions import *
 
-def initialize_data():
-    info=pd.read_csv('./data/be223a_dataset.csv')
-    date_time=parse_datetime(info.ScheduledDTTM_D)
-    info1 = info[['Exam ID', 'OrgCode', 'Modality', 'DepartmentCode', 'Age', 'Patient ID', 'Gender']]
+def day_timeslots(orgcode, modality, dept, date_time):
+    '''
+    Arguments:
+    ---------
+    orgcode: str
+    modality: str
+    dept: str
+    date_time: Datetime.Datetime
+    '''
+    query_day = str(date_time.date())
+    query = "SELECT `Exam ID`, `OrgCode`, `Modality`, `DepartmentCode`, `Age`, `Patient ID`, `Gender`, `datetime`"
+    query = query + " FROM rawdata WHERE Orgcode='%s' AND Modality='%s' AND DepartmentCode = '%s'" %(orgcode,modality,dept)
+    query = query +  "AND `datetime` BETWEEN '"+query_day+"' and '"+query_day+" 23:59:59'"
+    info_day = query_data("./data/db/223ADB3.db", query)
+    date_time= parse_datetime(info_day.pop('datetime'), dt_format = '%Y-%m-%d  %H:%M:%S')
     df= pd.DataFrame({'datetime':date_time})
-    info=pd.concat([info1, df], axis=1)
-    return info
+    day_info=pd.concat([info_day, df], axis=1)
+
+    return day_info
 
 
-def parse_datetime(raw_datetime):
+def parse_datetime(raw_datetime, dt_format= '%m/%d/%Y %H:%M'):
     '''
     Takes a list or pandas.Series with strings and converts them to datetime when in this format '%m/%d/%Y %H:%M'.
     The output is a python list
@@ -21,7 +38,7 @@ def parse_datetime(raw_datetime):
     n_data = raw_datetime.shape[0]
     for i in range(0,n_data):
         try:
-            dt_temp = dt.datetime.strptime(raw_datetime_list[i], '%m/%d/%Y %H:%M')
+            dt_temp = dt.datetime.strptime(raw_datetime_list[i], dt_format)
         except:
             dt_temp = np.nan
         # append list
@@ -31,9 +48,9 @@ def parse_datetime(raw_datetime):
 
 #function to return Examid, Probability, Status for time slots in a week
 def generate_timeslots(orgcode, modality, dept, dt_initial, threshold = 0.5):
-    info = initialize_data()
+    #info = initialize_data()
     # Filter orgcode, modality, dept
-    info_filt = info.loc[(info.OrgCode == orgcode) & (info.Modality == modality) & (info.DepartmentCode == dept)]
+    #info_filt = info.loc[(info.OrgCode == orgcode) & (info.Modality == modality) & (info.DepartmentCode == dept)]
     # Time slots intervals duration to check
     ts_duration = dt.timedelta(minutes = 30)
     n_ts = 31
@@ -44,11 +61,15 @@ def generate_timeslots(orgcode, modality, dept, dt_initial, threshold = 0.5):
     # initialize days list
     days = []
     # iterating over days of the week
-    for i in range(0,7):
+    for i in range(0,n_days):
         dt_temp = dt_initial + dt.timedelta(days = i)
         dt_next = dt_temp + dt.timedelta(days = 1)
         days.append(dt_temp.strftime("%A") + '\n'+dt_temp.strftime("%m")+'/'+dt_temp.strftime("%d") )
-        info_day = info_filt.loc[(info_filt.datetime >= dt_temp) & (info_filt.datetime < dt_next)]
+
+        info_day=day_timeslots(orgcode, modality, dept, dt_temp)
+
+
+        #info_day = info_filt.loc[(info_filt.datetime >= dt_temp) & (info_filt.datetime < dt_next)]
         # initialize row
         row = []
         # iterating over timeslots
@@ -97,6 +118,9 @@ def generate_timeslots(orgcode, modality, dept, dt_initial, threshold = 0.5):
 
 def predict_probability(exam_id):
     ## Should be done from the model
+    query = "SELECT Probabilities FROM results  WHERE Exam_ID = %s" %exam_id
+    info_day = query_data("./data/db/223ADB3.db", query)
+    #print(query)
     return np.random.random(1)[0]
 
 if __name__ == '__main__':
