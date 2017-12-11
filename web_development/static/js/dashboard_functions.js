@@ -100,8 +100,8 @@ function load_patient_info(patient_info){
 }
 
 function load_charts(){
-  html = '<div> Is load_charts working? </div>';
-  console.log("Is load_charts working?");
+  html = "<center><img src='/static/images/loading.gif' style = 'width: 50px; margin: 0 auto; margin: 100px;'> </img></center>"
+  $('#hospital-chart').html(html);
 }
 
 function create_charts(orgcode, modality){
