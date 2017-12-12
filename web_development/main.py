@@ -20,6 +20,7 @@ import numpy as np
 #import xgboost as xgb
 import pickle
 
+
 content = ""
 with open("./data/ML_Analysis.md", "r") as f:
      content = f.read()
@@ -176,6 +177,8 @@ def calendar_json():
     }
     return jsonify(result = table)
 
+# Load hospital_map
+hospital_map = pickle.load(open("./data/hospital_map.dat", "rb"))
 
 # Retrieve data from hospital map
 orgcodes = ['Choose']+list(hospital_map.keys())
