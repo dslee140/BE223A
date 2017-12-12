@@ -162,7 +162,7 @@ def parsing(data_raw_fname, encoding, dtformat,
 
     label = get_label(data_raw['ReasonDesc'], ['CANCELLED BY PT', 'PT NO SHOW'])
     features_exam = pd.concat([
-        data_raw[[exam_id, pt_id]+['OrgCode','Modality','Anatomy','SubSpecialty']],
+        data_raw[[exam_id, pt_id]+['OrgCode','Modality','Anatomy','SubSpecialty', 'DepartmentCode']],
         pd.DataFrame({'Weekday':weekday, 'Timeofday':bizdescr, 'Dayofyear':ddofyr,'Datetime Obj':dtobjs,'Label':label, 'ICD Group':icd9_grp})
                          ],axis=1)
     
