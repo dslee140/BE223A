@@ -96,8 +96,8 @@ def get_label(cancel_list, valid_reason):
     labels=(labels>0).astype(int) #Cancel == 1
     return labels
 
-def rename_columns(df):
-    """ Renames column whitespace with underscore (_). 
+def rm_column_whitespace(df):
+    """ Replaces column name whitespace with underscore (_). 
     df: original dataframe 
     
     returns dataframe with renamed columns 
@@ -131,6 +131,11 @@ def parsing(data_raw_fname, encoding, dtformat,
     print('Reading %s'%data_raw_fname)
 
     data_raw = pd.read_csv(data_raw_fname, encoding = encoding)
+    data_raw = data_raw.rename(index=str, columns={exam_id: 'Exam ID', pt_id: 'Patient ID', age: 'Age', gender: 'Gender'})
+    exam_id = 'Exam ID'
+    pt_id = 'Patient ID'
+    age = 'Age'
+    gender = 'Gender'
     raw_datetime = data_raw['ScheduledDTTM_D']
 
     num_samples = raw_datetime.shape[0]
@@ -159,7 +164,6 @@ def parsing(data_raw_fname, encoding, dtformat,
     weatherdf = query_weather(ddofyr,weathermaster)
     bizdescr = get_descr_bizhour(timeofday)
 
-
     label = get_label(data_raw['ReasonDesc'], ['CANCELLED BY PT', 'PT NO SHOW'])
     features_exam = pd.concat([
         data_raw[[exam_id, pt_id]+['OrgCode','Modality','Anatomy','SubSpecialty', 'DepartmentCode']],
@@ -167,7 +171,7 @@ def parsing(data_raw_fname, encoding, dtformat,
                          ],axis=1)
     
     print('Processed in %.3f seconds.'% (time.time()-a))
-    return rename_columns(features_pt), rename_columns(features_exam), rename_columns(weathermaster)
+    return rm_column_whitespace(features_pt), rm_column_whitespace(features_exam), rm_column_whitespace(weathermaster)
 
 if __name__ == '__main__':
     import sys
