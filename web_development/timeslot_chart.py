@@ -28,8 +28,6 @@ def timeslots_for_charts(orgcode, modality, dept, dt_initial):
         slot_counts.append(int(len(info_i.index)))
 
     full_slots = np.repeat(np.max(slot_counts), n_days)
-    subtract_slots = slot_counts - full_slots
-    subtract_slots = [int(f) for f in subtract_slots]
     full_slots = [int(f) for f in full_slots]
 
     ts_data = dict()

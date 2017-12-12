@@ -22,10 +22,16 @@ def day_timeslots(orgcode, modality, dept, date_time):
     -------
     day_info: pandas.DataFrame
     '''
+    query = "SELECT Exam_ID FROM results"
+    exam_ids_test = list(query_data("./data/db/223ADB3.db", query)['Exam_ID'])
     query_day = str(date_time.date())
     query = "SELECT `Exam ID`, `OrgCode`, `Modality`, `DepartmentCode`, `Age`, `Patient ID`, `Gender`, `datetime`"
     query = query + " FROM rawdata WHERE Orgcode='%s' AND Modality='%s' AND DepartmentCode = '%s'" %(orgcode,modality,dept)
-    query = query +  "AND `datetime` BETWEEN '"+query_day+"' and '"+query_day+" 23:59:59'"
+    query = query +  "AND `datetime` BETWEEN '"+query_day+"' and '"+query_day+" 23:59:59' AND `Exam ID` IN ("
+    for eid in exam_ids_test:
+        query += str(eid) + ", "
+    query = query[:-2]
+    query += ")"
     info_day = query_data("./data/db/223ADB3.db", query)
     date_time= parse_datetime(info_day.pop('datetime'), dt_format = '%Y-%m-%d  %H:%M:%S')
     df= pd.DataFrame({'datetime':date_time})
@@ -155,9 +161,8 @@ def predict_probability(exam_id):
     '''
     query = "SELECT Probabilities FROM results  WHERE Exam_ID = %s" %exam_id
     info_day = query_data("./data/db/223ADB3.db", query)
-    print(query)
-    print(info_day)
-    probability = np.random.random(1)[0]
+    #print(info_day)
+    probability = info_day.loc[0]['Probabilities']
     return probability
 
 # Testing

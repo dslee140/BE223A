@@ -13,32 +13,16 @@ from app_calendar import *
 from datetime import datetime,timedelta
 import markdown
 from timeslot_chart import *
+from read_db import filt_shows
 
 # Demo form
 import numpy as np
 #import xgboost as xgb
 import pickle
 
-info=pd.read_csv('./data/withLabel.csv')
-#TODO This will be modified as long as database is set up
-info['date'], info['time'] = info['CompletedDTTM_D'].str.split(' ', 1).str
-info=info[['Modality','Age','OrgCode','Anatomy','date','Labels']]
-features = ['Modality','Age','OrgCode','Anatomy']
-feature_tup = [(feature, feature) for feature in features]
-
-
-
-#class ChartForm(FlaskForm):
-#    orgcode = SelectField('Organization Code', choices = orgcodes_choices)
-#    submit = SubmitField('Submit')
-
-class NameForm(FlaskForm):
-    name = StringField('What is your name?', validators=[DataRequired()])
-    submit = SubmitField('Submit')
-
 
 content = ""
-with open("12.6 Algorithm Refinement.md", "r") as f:
+with open("./data/ML_Analysis.md", "r") as f:
      content = f.read()
 
 
@@ -47,52 +31,20 @@ app.config['SECRET_KEY'] = 'iridescent'
 bootstrap = Bootstrap(app)
 Misaka(app) # To use markdown in the template
 
-"""
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    name = None
-    form = NameForm()
-    if form.validate_on_submit():
-        name = form.name.data
-        form.name.data = ''
-    return render_template('index.html', form=form, name=name)
-"""
 
-
-
-@app.route('/user/<name>')
-def user(name):
-    return render_template('user.html',name=name)
-
-
-@app.route('/home')
-def home():
+@app.route('/Analytics')
+def analytics():
     contents = content
     contents = Markup(markdown.markdown(contents))
     return render_template('home.html',content = contents)
-
-@app.route('/BarCharts')
-def bar_chart():
-    labels = ["January","February","March","April","May","June","July","August"]
-    values = [10,9,8,7,6,4,7,8]
-    return render_template('barChart.html', values=values, labels=labels)
-
-@app.route('/LineCharts')
-def line_chart():
-    labels = ["January","February","March","April","May","June","July","August"]
-    values = [10,9,8,7,6,4,7,8]
-    return render_template('lineChart.html', values=values, labels=labels)
-
-@app.route('/PieCharts')
-def pie_chart():
-    labels = ["January","February","March","April","May","June","July","August"]
-    values = [10,9,8,7,6,4,7,8]
-    colors = [ "#F7464A", "#46BFBD", "#FDB45C", "#FEDCBA","#ABCDEF", "#DDDDDD", "#ABCABC"  ]
-    return render_template('pieChart.html', set=zip(values, labels, colors))
-
+    #return render_template('ML_Analysis.html')
 
 @app.route('/for_orgcode_charts_json')
 def for_orgcode_charts(feature='OrgCode'):
+    show_df, noshow_df = filt_shows()
+    show_labels = [0] * len(show_df.index) + [1] * len(noshow_df.index)
+    info = pd.concat([show_df, noshow_df], axis=0)
+    info['Labels'] = show_labels
     labels = sorted(info[feature].unique())
     show = []
     noshow = []
@@ -103,8 +55,20 @@ def for_orgcode_charts(feature='OrgCode'):
         show.append(completed_count)
         noshow.append(noshow_count)
     data = dict()
-    data['Show'] = show
-    data['NoShow'] = noshow
+
+    percent_show = []
+    percent_noshow = []
+    for i, s in enumerate(show):
+        total = s + noshow[i]
+        if total == 0:
+            percent_show.append(s)
+            percent_noshow.append(noshow[i])
+        else:
+            percent_show.append(s/total)
+            percent_noshow.append(noshow[i]/total)
+
+    data['Show'] = percent_show
+    data['NoShow'] = percent_noshow
 
     stack = []
     for key in data:
@@ -116,6 +80,10 @@ def for_orgcode_charts(feature='OrgCode'):
 
 @app.route('/for_modality_charts_json')
 def for_modality_charts(feature='Modality'):
+    show_df, noshow_df = filt_shows()
+    show_labels = [0] * len(show_df.index) + [1] * len(noshow_df.index)
+    info = pd.concat([show_df, noshow_df], axis=0)
+    info['Labels'] = show_labels
     orgcode = request.args.get('orgcode')
     if orgcode == 'Choose':
         data = dict()
@@ -129,13 +97,24 @@ def for_modality_charts(feature='Modality'):
         for f in labels:
             info_temp = info[info['OrgCode'] == orgcode]
             completed_count = list(info_temp[info_temp[feature] == f]['Labels'] == 0).count(True)
-            noshow_count = list(info[info[feature] == f]['Labels'] == 1).count(True)
+
+            noshow_count = list(info_temp[info_temp[feature] == f]['Labels'] == 1).count(True)
             show.append(completed_count)
             noshow.append(noshow_count)
 
-        data['Show'] = show
-        data['NoShow'] = noshow
+        percent_show = []
+        percent_noshow = []
+        for i, s in enumerate(show):
+            total = s + noshow[i]
+            if total == 0:
+                percent_show.append(s)
+                percent_noshow.append(noshow[i])
+            else:
+                percent_show.append(s/total)
+                percent_noshow.append(noshow[i]/total)
 
+        data['Show'] = percent_show
+        data['NoShow'] = percent_noshow
         stack = []
         for key in data:
             stack.append(key)
@@ -144,42 +123,6 @@ def for_modality_charts(feature='Modality'):
         data['labels'] = labels
 
     return jsonify(result = data)
-
-def preproc_stacked(feature='Modality'):
-    labels = sorted(info[feature].unique())
-    show = []
-    noshow = []
-
-    for f in labels:
-        completed_count = list(info[info[feature] == f]['Labels'] == 0).count(True)
-        noshow_count = list(info[info[feature] == f]['Labels'] == 1).count(True)
-        show.append(completed_count)
-        noshow.append(noshow_count)
-
-    data = dict()
-    data['Show'] = show
-    data['NoShow'] = noshow
-    stack = []
-    for key in data:
-        stack.append(key)
-
-    return labels, data, stack
-
-class FeatForm(FlaskForm):
-    feature = SelectField('Features', choices = feature_tup)
-    submit = SubmitField('Submit')
-
-@app.route('/StackedCharts', methods=['GET', 'POST'])
-def stacked_chart():
-    form = FeatForm()
-
-    if form.validate_on_submit():
-        feature = form.feature.data
-        #feature = request.args.get("selector", 'Modality')
-        labels, data, stack = preproc_stacked(info, feature)
-        return render_template('StackedChart.html', labels=labels, data=data, stack=stack, form=form)
-    labels, data, stack = preproc_stacked(info, features[0])
-    return render_template('StackedChart.html', labels=labels, data=data, stack=stack, form=form)
 
 @app.route('/calendar')
 def calendar():
