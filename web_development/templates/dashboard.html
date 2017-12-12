@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Dashboard - Radiology Web App{% endblock %}
+{% block page_content %}
+
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+
+<!--Layout-->
+<div class="row">
+  <div id="form-group" class="col-lg-2">
+    <div id= "form">
+        {{ wtf.quick_form(form) }}
+    </div>
+    <div id= "patient-info"></div>
+  </div>
+
+  <div id= "calendar" class="col-lg-6"></div>
+
+  <div id = "analytics-charts" class="col-lg-4">
+    <div id="hospital-div" ></div>
+    <div id="modality-div" ></div>
+  </div>
+</div>
+
+<div id = "past-weeks" class="row">
+  <div id="weekm2" class="col-lg-6">
+  </div>
+  <div id="weekm1" class="col-lg-6">
+  </div>
+</div>
+<!--End of Layout-->
+
+<!--Loading Jquery-->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="{{
+  url_for('static', filename='jquery.js') }}">\x3C/script>')</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.0/Chart.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.3/js/bootstrap-select.min.js"></script>
+<!--Initialize root directory-->
+<script type=text/javascript>
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+
+<!--Dashboard Javascript functions-->
+<script src="/static/js/dashboard_functions.js"></script>
+<script>
+// To run when document is ready
+$(function() {
+  //Load the charts
+  $.getJSON($SCRIPT_ROOT + '/for_orgcode_charts_json', { nodata:0
+  }, function(data) {
+    load_org_chart(data.result);
+  });
+
+  $('#orgcode').change(function() {
+    if($('#orgcode').val() == "Choose"){
+      reset_modalities();
+      reset_departments();
+    } else {
+      $.getJSON($SCRIPT_ROOT + '/modalities_json', {
+        orgcode: $('#orgcode').val()
+      }, function(data) {
+        load_modalities(data.result);
+        reset_departments();
+      });
+      $.getJSON($SCRIPT_ROOT + '/for_modality_charts_json', {
+        orgcode: $('#orgcode').val()}, function(data) {
+          console.log(data);
+        load_modalities_chart(data.result);
+      });
+    };
+  });
+
+  $('#modality').change(function() {
+    if($('#modality').val() == "Choose"){
+      reset_departments();
+    } else {
+    $.getJSON($SCRIPT_ROOT + '/departments_json', {
+      orgcode: $('#orgcode').val(),
+      modality: $('#modality').val()
+    }, function(data) {
+      load_departments(data.result);
+    });
+  };
+  });
+
+  $('#departmentcode').change(function(){
+    load_table();
+  });
+
+  $("#calendar").on('click', '.time_slot', function(){
+    data = {
+      exam_id: $(this).data( "examId" ),
+      patient_id: $(this).data( "patientId" ),
+      age: $(this).data( "age" ),
+      gender:  $(this).data( "gender" )
+    };
+    load_patient_info(data);
+  });
+});
+</script>
+
+{% endblock %}

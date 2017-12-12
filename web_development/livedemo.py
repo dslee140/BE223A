@@ -29,6 +29,10 @@ class DemoForm(FlaskForm):
     submit = SubmitField('Submit')
 
 def preprocess_user_data(age, gender, modality, orgcode, day, hour):
+    '''
+    Takes features before one-hot encoding. Encodes the categorical variables.
+    Returns the features as a vector ready to input in ML model.
+    '''
     # Process the one-hot encoded data
     orgcode_array = (orgcodes == orgcode)
     modality_array = (modalities == modality)
@@ -43,6 +47,9 @@ def preprocess_user_data(age, gender, modality, orgcode, day, hour):
     return X_array
 
 def process_demo_form(form):
+    '''
+    Extracts the form input into variables
+    '''
     age = form.age.data
     gender = int(form.gender.data)
     modality = form.modality.data
@@ -50,6 +57,12 @@ def process_demo_form(form):
     return age, gender, modality, orgcode
 
 def predict_week(age, gender, modality, orgcode, days = range(0,7), hours = range(8, 24)):
+    '''
+    Takes all features of the ML model. Days and hours are given as lists. It returns a
+    table of the probabilities predicted by the model for all combinations of days and hours.
+    The table is in html format.
+    '''
+
     # Loading the model
     model =pickle.load(open("./data/models/XGBoostMidtermModel.dat", "rb"))
 
