@@ -30,6 +30,8 @@ from sklearn.metrics import (confusion_matrix,
                              precision_score,
                              roc_curve, auc)
 
+import pickle
+
 def model_preprocess (data):
     '''
     Function that applies Edited Nearest Neighbors from the imblearn library to create a more balanced training set.
@@ -47,9 +49,8 @@ def model_preprocess (data):
     '''
     a = time.time()
     #encoding
-    features_encoded=pd.get_dummies(data).dropna()
     #split into testing and training
-    train, test = train_test_split(features_encoded, test_size=0.2, stratify = features_encoded.Label)
+    train, test = train_test_split(data, test_size=0.2, stratify = data.Label)
     #training
     trainlab = train.Label
     train = train.drop('Label', axis=1)
@@ -424,11 +425,11 @@ def table_merge(data, merge, foreignk):
     return data
 
 
-def run_model(data, k = 5000, tune_parameters = False, exam_id = 'Exam_ID', pt_id = 'Patient_ID', drops = ['Datetime Obj', 'Dayofyear']):
+def run_model(data, appointments_s, k = 5000, tune_parameters = False, exam_id = 'Exam_ID', pt_id = 'Patient_ID', drops = ['Datetime Obj', 'Dayofyear']):
     '''
     Creates a separate data frame with patient IDs, Exam IDs, and the indices, called ids.
     Calls model_preprocess to undersample the dominant class using Edited Nearest Neighbors, a technique that involves clustering the data, and choosing from those clusters. This outputs a test set with the same distribution as the total set, and a training set that is more balanced.
-    Runs the RandomForestClassifier from the sklearn library. If model_preprocess was run, it uses those parameters; if not, default parameters are specified from manual tuning. The function uses the builtin methods to predict the labels as well as the probabilities for each test case.
+    Runs the RandomForestClassifier from the sklearn library. If gridsearch was run, it uses those parameters; if not, default parameters are specified from manual tuning. The function uses the builtin methods to predict the labels as well as the probabilities for each test case.
     The function then performs a series of analyses:
     rfc_metrics: generates the standard measures of performance (accuracy, precision, recall F-1), and plots the ROC AUC.
     show_confusion_matrix: with those metrics generated above, this function generates a confusion matrix and reports them, along with the confusion matrix.
@@ -456,6 +457,18 @@ def run_model(data, k = 5000, tune_parameters = False, exam_id = 'Exam_ID', pt_i
     
     ids = data[[exam_id, pt_id]]
     data = data.drop(drops +[exam_id, pt_id], axis = 1)
+    df1=pd.get_dummies(data).dropna()
+    df1['Exam_ID'] = ids[exam_id]
+    df1['Patient_ID'] = ids[pt_id]
+    df = df1[df1['Exam_ID'].isin(list(appointments_s.Exam_ID))]
+    validate = df1[~df1['Exam_ID'].isin(list(appointments_s.Exam_ID))]
+    
+    ids = df[[exam_id, pt_id]]
+    data = df.drop([exam_id, pt_id], axis = 1)
+    
+    ids_v = validate[[exam_id, pt_id]]
+    validate = validate.drop([exam_id, pt_id, "Label"], axis = 1)
+    validate=pd.get_dummies(validate).dropna()
     
     #preprocess the data: ENN
     train, trainlab, test, test_nlab, testlab = model_preprocess(data)
@@ -481,12 +494,19 @@ def run_model(data, k = 5000, tune_parameters = False, exam_id = 'Exam_ID', pt_i
                              random_state = 10)
     
     rfc.fit(train, trainlab) 
+    
+    # save the model to disk
+    filename = 'RFC_model.sav'
+    pickle.dump(rfc, open(filename, 'wb'))
     results = rfc.predict(test_nlab)
     
     sort_features = feat_imprt(rfc, test_nlab)
     
     test['Predictions'] = results
     test['Probabilities'] = rfc.predict_proba(test_nlab)[:,1]
+    
+    validate['Predictions'] = rfc.predict(validate)
+    validate['Probabilities'] = rfc.predict_proba(validate.drop('Predictions', axis = 1))[:,1]
     
     print('Random Forest Classifier Model run in %.3f seconds.'% (time.time()-b))
     
@@ -502,13 +522,22 @@ def run_model(data, k = 5000, tune_parameters = False, exam_id = 'Exam_ID', pt_i
     results = test[['Probabilities', 'Predictions']]
     results['Exam_ID'] = [m.get(i, 'supplemental') for i in results.index]
     results
+    
+    m = dict(zip(
+    ids_v.index.values.tolist(),
+    ids_v.Exam_ID.values.tolist()
+    ))
+    
+    results_v = validate[['Probabilities', 'Predictions']]
+    results_v['Exam_ID'] = [m.get(i, 'supplemental') for i in results_v.index]
+    results_v
 
     
     ### One more function: push results to DB (both labels and probabilities) 
     
     print('Pipeline completed in %.3f seconds.'% (time.time()-a))
     
-    return results, test, prob, groups, evalstats, sort_features
+    return results, results_v, test, validate, prob, groups, evalstats, sort_features
 
 def num_overlap_hist (test, false_positives, false_negatives, feat):
     plt.figure(figsize=(15,5))
