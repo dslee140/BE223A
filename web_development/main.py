@@ -20,7 +20,6 @@ import numpy as np
 #import xgboost as xgb
 import pickle
 
-
 content = ""
 with open("./data/ML_Analysis.md", "r") as f:
      content = f.read()
@@ -129,23 +128,7 @@ def calendar():
     return render_template("calendar.html")
 
 
-# Live demo route
-#@app.route('/livedemo', methods=['GET', 'POST'])
-#def livedemo():
-#    # form instance
-#    form = lvdm.DemoForm()
-    # Initialize variables
-#    prediction_html_table = None
-#    predicted = False
-#    if form.validate_on_submit():
-        # Extract form data
-#        age, gender, modality, orgcode = lvdm.process_demo_form(form)
-        # Send data to get prediction table
-#        prediction_html_table = lvdm.predict_week(age, gender, modality, orgcode)
-#        predicted = True
 
-# Load hospital_map
-hospital_map = pickle.load(open("./data/hospital_map.dat", "rb"))
 
 @app.route('/modalities_json')
 def modalities_json():
@@ -193,23 +176,8 @@ def calendar_json():
     }
     return jsonify(result = table)
 
-@app.route('/_patient_json')
-def patient_json():
-    exam_id = request.args.get('exam_id')
-    # Look in database for the exam_id and pull information of the patient
-    patient_info = {
-        'name': "John",
-        'telephone': 1112223333,
-        'email': 'john@gmail.com',
-        'gender': 'Male',
-        'age': 83
-    }
-    return jsonify(result = patient_info)
 
-
-
-# Retrieve data from database
-# Let's set up just a list for now
+# Retrieve data from hospital map
 orgcodes = ['Choose']+list(hospital_map.keys())
 orgcodes_choices = [(org, org) for org in orgcodes]
 class FiltersForm(FlaskForm):
@@ -217,42 +185,12 @@ class FiltersForm(FlaskForm):
     modality = SelectField('Exam Modality', choices = [('Choose', 'Choose')])
     departmentcode = SelectField('Department Code', choices = [('Choose', 'Choose')])
 
-class PatientForm(FlaskForm):
-    age = IntegerField('Age', validators=[DataRequired()])
-    gender = SelectField('Gender', choices = [('1', 'Male'), ('0', 'Female')])
-    submit = SubmitField('Submit')
 
 @app.route('/')
 def dashboard():
     form = FiltersForm()
-    patient_form = PatientForm()
     return render_template('dashboard.html', form =form)
 
-
-@app.route('/_render_calendar')
-def calendar_data():
-    orgcode = 'ASM' #orgcode = request.args.get('orgcode')
-    modality = 'CR' #modality = request.args.get('modality')
-    timeslots, days = find_timeslots(orgcode, modality)
-    return jsonify(timeslots = timeslots, days = days)
-
-def find_timeslots(orgcode, modality):
-    # Retrieve data from database
-    # Let's set up just a list for now
-    timeslots = ["08:00", "10.00", "15:00"]
-    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
-
-    return timeslots, days
-
-def render_calendar(orgcode, modality):
-
-    return None
-
-#@app.route('/dropdown')
-#def chart():
-#    labels = ["January","February","March","April","May","June","July","August"]
-#    values = [10,9,8,7,6,4,7,8]
-#    return render_template('chart.html', values=values, labels=labels)
 
 
 if __name__ == "__main__":
