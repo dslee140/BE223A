@@ -96,6 +96,18 @@ def get_label(cancel_list, valid_reason):
     labels=(labels>0).astype(int) #Cancel == 1
     return labels
 
+def rename_columns(df):
+    """ Renames column whitespace with underscore (_). 
+    df: original dataframe 
+    
+    returns dataframe with renamed columns 
+    """
+    colnames = df.columns.tolist()
+    for i, cn in enumerate(colnames):
+        colnames[i] = cn.replace(' ', '_')
+    df.columns = colnames
+    return df
+
 def parse_patient(patientlist):
     """ Parses the list of patient given the raw data
     patientlist: The raw data relevant to patient, i.e., patient ID, age, and gender.
@@ -117,8 +129,7 @@ def parsing(data_raw_fname, encoding, dtformat,
     """
     a=time.time()
     print('Reading %s'%data_raw_fname)
-    #data_raw_fname = 'be223a_dataset.csv'
-#    data_raw = pd.read_csv(data_raw_fname)
+
     data_raw = pd.read_csv(data_raw_fname, encoding = encoding)
     raw_datetime = data_raw['ScheduledDTTM_D']
 
@@ -141,8 +152,6 @@ def parsing(data_raw_fname, encoding, dtformat,
 
     for i,rd in enumerate(data_raw['ScheduledDTTM_D']):
         weekday[i],ddofyr[i],timeofday[i], dtobjs[i]=parse_datetime(rd,dtformat)
-        #tdata[i,:], dtobjs[i]=parse_datetime(rd)
-
 
     weathermaster = parse_weather('CA045115.txt', featurelist)
     weathermaster['Dayofyear'] = weathermaster.index
@@ -156,12 +165,9 @@ def parsing(data_raw_fname, encoding, dtformat,
         data_raw[[exam_id, pt_id]+['OrgCode','Modality','Anatomy','SubSpecialty']],
         pd.DataFrame({'Weekday':weekday, 'Timeofday':bizdescr, 'Dayofyear':ddofyr,'Datetime Obj':dtobjs,'Label':label, 'ICD Group':icd9_grp})
                          ],axis=1)
-
-
-    features_pt.rename(columns={'Patient ID':'Patient_ID'}, inplace=True)
-    features_exam.rename(columns={'Exam ID':'Exam_ID', 'Patient ID':'Patient_ID', 'ICD Group': 'ICD_Group'}, inplace=True)
+    
     print('Processed in %.3f seconds.'% (time.time()-a))
-    return features_pt, features_exam, weathermaster
+    return rename_columns(features_pt), rename_columns(features_exam), rename_columns(weathermaster)
 
 if __name__ == '__main__':
     import sys
