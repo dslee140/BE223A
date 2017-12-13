@@ -1,7 +1,11 @@
 # BE223A
 ## Parsing
 
-- David: Please see Parsing.ipynb to see an example of parsing. I took part in overall parsing of the raw appointment data, and weather data for use in database and in machine learning (parsing.py). I integrated and documented the ICD9 parsing functoinality that Talia provided. I had an early start on parsing such that different learning algorithmss could be evaluated on the commond grounds for the midterm projects, by using the same set of features, folds, and training and test data. In the process I initiated the Git repository, and took a role in managing it. 
+- David: Please see Parsing.ipynb to see an example of parsing. 
+  - Overall parsing of the raw appointment data, and weather data (parsing.py). 
+  - Integration and documentation of the ICD9 parsing functoinality that Talia provided. 
+  - Preparation of the same set of features, folds, and training and test data for our midterm projects. 
+  - Git repository management
 
 - Talia: 
   - Traffic research
