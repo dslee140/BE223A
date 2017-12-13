@@ -5,15 +5,15 @@
 
 - Talia: ICD9'ed, prepared our final presentations, compared our work to literature.
 
-* Database
+## Database
 
 - Lavanya: Explored the unknowns of the DB world and did her magic.
 
-* Machine learning
+## Machine learning
 
 - Jen: was a great leader. Made things happen. Brought me brownies and cookies as well.
 
-* Interface
+## Interface
 
 - Akashya: Did a great visualization and demo of
 
@@ -21,5 +21,5 @@
 
 - James: we and our deliverables are. 
 
-** That's right. 
+# That's right. 
 
