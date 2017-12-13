@@ -16,7 +16,10 @@ Largely created group powerpoint presentation (i.e. future direction slides) and
 
 ## Machine learning
 
-- Jen: was a great leader. Made things happen. Brought me brownies and cookies as well.
+- Jen: wrote all functions in ml_functions.py (see documentation) to carry out the functionality of the model using queries from the database
+  - Co-wrote Application_Script.ipynb with Lavanya, which served to integrate the parsing, database, and machine learning components
+  - Helped write icd9_group function in parsing_icd9
+  - Set up meetings and enforced deadlines to help the project move forward
 
 ## Interface
 
