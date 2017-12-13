@@ -28,7 +28,7 @@
 
 ## Interface
 
-- Akashya: 
+- Akshaya: 
   - Python function for creating Dictionary for creating the dynamic forms
   - Python function for displaying Charts for displaying show/no show for all modalities and Hospital
   - Integration between Database and the Web application.
