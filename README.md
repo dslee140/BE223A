@@ -28,7 +28,11 @@
 
 ## Interface
 
-- Akashya: Did a great visualization and demo of
+- Akashya: 
+  - Python function for creating Dictionary for creating the dynamic forms
+  - Python function for displaying Charts for displaying show/no show for all modalities and Hospital
+  - Integration between Database and the Web application.
+  - Also created dropdown features(html and css) but was not used in the final version of the web App.
 
 - Chrysostomos: how COOL 
 
