@@ -52,19 +52,19 @@ def parse_weather(weatherfilename, featurelist):
     
     # Parsing the weather txt file. 
     with open(weatherfilename) as f:
-        for l in f.readlines():        
-            if count > 0:
-                if dummylines:
+        for l in f.readlines(): # Reading each line       
+            if count > 0: # Have some months remaining
+                if dummylines: #Skip dummy lines 
                     dummylines-=1
                     continue
                 count-=1
                 weatherlist[i-1] += [float(j) for j in l.split()[1:-1]]
-            else:
-                if i >= len(featurelist): 
+            else: # Gone through all months 
+                if i >= len(featurelist): # Gone through all features? 
                     break
-                if featurelist[i] in l:
+                if featurelist[i] in l: # If reached the line with desired feature 
                     i+=1
-                    count = 12
+                    count = 12 # Reset to 12 months
                     dummylines = 2
     df = pd.DataFrame(np.array(weatherlist).T,columns=featurelist)  
     narray = np.array([[np.nan], [np.nan], [np.nan], [np.nan]]).T
