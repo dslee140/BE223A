@@ -10,12 +10,21 @@ from bisect import bisect
 def parse_datetime(raw_datetime, dtformat):
     """ Parses input raw date and time string into Python datetime object, given the format of raw datetime string
     raw_datetime: string of raw date and time.
+<<<<<<< HEAD
     dtformat: string to specify format of raw_datetime.
 
     returns day of week, day of year, hour in 24-hr format, Python datetime object.
     """
     if len(raw_datetime)<5:
         return np.nan, 365, np.nan, np.nan
+=======
+    dtformat: string to specify format of raw_datetime. 
+    
+    returns day of week, day of year, hour in 24-hr format, Python datetime object.     
+    """    
+    if len(raw_datetime)<5: #Missing info
+        return np.nan, 365, np.nan, np.nan    
+>>>>>>> 5f291a22d76a26df2d02be656b40b07a117f7f3f
     datetime_obj = datetime.strptime(raw_datetime,dtformat) #'%m/%d/%Y %H:%M'
     return datetime_obj.weekday(), datetime_obj.timetuple().tm_yday, datetime_obj.hour, datetime_obj
 
@@ -26,7 +35,7 @@ def bizhour(hh):
 
     returns business status, AM, PM, or OFF.
     """
-    biz = ['OFF','AM','PM','OFF']
+    biz = ['OFF','AM','PM','OFF'] # OFF < 8, 8 < AM < 12, 12 < PM < 17, 17 < OFF
     breakpoints = [8, 12, 17]
     return biz[bisect(breakpoints, hh)]
 
@@ -45,25 +54,32 @@ def parse_weather(weatherfilename, featurelist):
 
     returns Pandas dataframe of row as day of year [1,365], and column the weather features.
     """
-    dummylines=2
-    i=0
-    count = 0
+    dummylines=2 # Current weatherfile format has two dummy lines after the line with name of weather feature. 
+    i=0 # How many features have I gone through? 
+    count = 0 # How many months of the year have I read information for? 
     weatherlist = [[] for i in range(len(featurelist))]
-
+    
+    # Parsing the weather txt file. 
     with open(weatherfilename) as f:
+<<<<<<< HEAD
         for l in f.readlines():
             if count > 0:
                 if dummylines:
+=======
+        for l in f.readlines(): # Reading each line       
+            if count > 0: # Have some months remaining
+                if dummylines: #Skip dummy lines 
+>>>>>>> 5f291a22d76a26df2d02be656b40b07a117f7f3f
                     dummylines-=1
                     continue
                 count-=1
                 weatherlist[i-1] += [float(j) for j in l.split()[1:-1]]
-            else:
-                if i >= len(featurelist):
+            else: # Gone through all months 
+                if i >= len(featurelist): # Gone through all features? 
                     break
-                if featurelist[i] in l:
+                if featurelist[i] in l: # If reached the line with desired feature 
                     i+=1
-                    count = 12
+                    count = 12 # Reset to 12 months
                     dummylines = 2
     df = pd.DataFrame(np.array(weatherlist).T,columns=featurelist)
     narray = np.array([[np.nan], [np.nan], [np.nan], [np.nan]]).T
@@ -96,11 +112,19 @@ def get_label(cancel_list, valid_reason):
     labels=(labels>0).astype(int) #Cancel == 1
     return labels
 
+<<<<<<< HEAD
 def rename_columns(df):
     """ Renames column whitespace with underscore (_).
     df: original dataframe
 
     returns dataframe with renamed columns
+=======
+def rm_column_whitespace(df):
+    """ Replaces column name whitespace with underscore (_). 
+    df: original dataframe 
+    
+    returns dataframe with renamed columns 
+>>>>>>> 5f291a22d76a26df2d02be656b40b07a117f7f3f
     """
     colnames = df.columns.tolist()
     for i, cn in enumerate(colnames):
@@ -130,44 +154,61 @@ def parsing(data_raw_fname, encoding, dtformat,
     a=time.time()
     print('Reading %s'%data_raw_fname)
 
-    data_raw = pd.read_csv(data_raw_fname, encoding = encoding)
-    raw_datetime = data_raw['ScheduledDTTM_D']
-
+    data_raw = pd.read_csv(data_raw_fname, encoding = encoding) #Read raw data csv file
+    
+    #Rename the input field names to a standard. 
+    data_raw = data_raw.rename(index=str, columns={exam_id: 'Exam ID', pt_id: 'Patient ID', age: 'Age', gender: 'Gender'})
+    exam_id = 'Exam ID'
+    pt_id = 'Patient ID'
+    age = 'Age'
+    gender = 'Gender'
+    
+    # Parsing the day/time of scheduled appointment
+    raw_datetime = data_raw['ScheduledDTTM_D'] # Raw info
+    
     num_samples = raw_datetime.shape[0]
-
-    weekday = np.zeros(num_samples)
-    timeofday = np.zeros(num_samples)
-    ddofyr = np.zeros(num_samples)
-    dtobjs = np.zeros(num_samples, dtype=object)
-    tdata = np.zeros([num_samples,3])
-
-
-    featurelist = ['Minimum Temperature', 'Maximum Temperature', 'Average Temperature', 'Precipitation']
-    pt_featurelist = [pt_id, age, gender]
-    patientlist = data_raw[pt_featurelist]
-
-    features_pt = parse_patient(patientlist)
-
-    icd9_grp = parse_icd9(data_raw['icd9'])
-
+    weekday = np.zeros(num_samples) #Weekday
+    timeofday = np.zeros(num_samples) # Time of day
+    ddofyr = np.zeros(num_samples) # Day of year
+    dtobjs = np.zeros(num_samples, dtype=object) # Datetime objects
     for i,rd in enumerate(data_raw['ScheduledDTTM_D']):
         weekday[i],ddofyr[i],timeofday[i], dtobjs[i]=parse_datetime(rd,dtformat)
 
-    weathermaster = parse_weather('CA045115.txt', featurelist)
-    weathermaster['Dayofyear'] = weathermaster.index
-    weathermaster.columns = ['mintemp', 'maxtemp', 'avtemp', 'precip', 'Dayofyear']
-    weatherdf = query_weather(ddofyr,weathermaster)
+    # Parsing time information into 
     bizdescr = get_descr_bizhour(timeofday)
+    
+    # Parsing patient information 
+    pt_featurelist = [pt_id, age, gender]
+    patientlist = data_raw[pt_featurelist]
+<<<<<<< HEAD
 
+    features_pt = parse_patient(patientlist)
 
+=======
+    features_pt = parse_patient(patientlist)    
+    
+    # Parsing ICD9 codes into groupings 
+>>>>>>> 5f291a22d76a26df2d02be656b40b07a117f7f3f
+    icd9_grp = parse_icd9(data_raw['icd9'])
+
+    # Parsing weather
+    featurelist = ['Minimum Temperature', 'Maximum Temperature', 'Average Temperature', 'Precipitation']
+    weathermaster = parse_weather('CA045115.txt', featurelist)
+    weathermaster['Dayofyear'] = weathermaster.index #Key for database
+    weathermaster.columns = ['mintemp', 'maxtemp', 'avtemp', 'precip', 'Dayofyear'] #Renaming to standard name
+    weatherdf = query_weather(ddofyr,weathermaster)
+    
+    # Getting patient label, show(0) vs no-show(1).
     label = get_label(data_raw['ReasonDesc'], ['CANCELLED BY PT', 'PT NO SHOW'])
+    
+    # Putting everything together
     features_exam = pd.concat([
         data_raw[[exam_id, pt_id]+['OrgCode','Modality','Anatomy','SubSpecialty', 'DepartmentCode']],
         pd.DataFrame({'Weekday':weekday, 'Timeofday':bizdescr, 'Dayofyear':ddofyr,'Datetime Obj':dtobjs,'Label':label, 'ICD Group':icd9_grp})
                          ],axis=1)
 
     print('Processed in %.3f seconds.'% (time.time()-a))
-    return rename_columns(features_pt), rename_columns(features_exam), rename_columns(weathermaster)
+    return rm_column_whitespace(features_pt), rm_column_whitespace(features_exam), rm_column_whitespace(weathermaster)
 
 if __name__ == '__main__':
     import sys
