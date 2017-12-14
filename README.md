@@ -29,7 +29,7 @@
   - Helped write icd9_group function in parsing_icd9
   - Set up meetings and enforced deadlines to help the project move forward
 
-## Interface
+## Web interface
 
 - Akshaya: 
   - Python function for creating Dictionary for creating the dynamic forms
@@ -44,7 +44,12 @@
   - Help in the integration with the database.
   - Modification of the database with extra columns (for use in the web app).
 
-- James: we and our deliverables are. 
+- James:
+  - Made bone structure for the web application.
+  - Discussed with Chrysostomos and nailed down to the final layout.
+  - Explored dropdown menu but the final version was implemented by the Chrysostomos.
+  - Implemented interactive stacked bar chart and line chart using `Chart.js` template.
+  - Retrieve data from the database for making charts.
 
 # That's right. 
 
