@@ -45,8 +45,8 @@
   - Modification of the database with extra columns (for use in the web app).
 
 - James:
-  - Made bone structure for the web application.
-  - Discussed with Chrysostomos and nailed down to the final layout.
+  - Made bone structure for the web application.
+  - Discussed with Chrysostomos and nailed down to the final layout.
   - Explored dropdown menu but the final version was implemented by the Chrysostomos.
   - Implemented interactive stacked bar chart and line chart using `Chart.js` template.
   - Retrieve data from the database for making charts.
