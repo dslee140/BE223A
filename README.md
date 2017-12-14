@@ -37,7 +37,12 @@
   - Integration between Database and the Web application.
   - Also created dropdown features(html and css) but was not used in the final version of the web App.
 
-- Chrysostomos: how COOL 
+- Chrysostomos:
+  - Design of the layout of the dashboard.
+  - Creation of hospital_map for the web form of the dashboard (./hospital_map.ipynb).
+  - Construction of the dashboard form and calendar.
+  - Help in the integration with the database.
+  - Modification of the database with extra columns (for use in the web app).
 
 - James: we and our deliverables are. 
 
