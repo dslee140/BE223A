@@ -51,5 +51,4 @@
   - Implemented interactive stacked bar chart and line chart using `Chart.js` template.
   - Retrieve data from the database for making charts.
 
-# That's right. 
 
