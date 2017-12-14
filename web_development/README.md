@@ -17,3 +17,9 @@ We use the framework Flask to build the web app. One should install the followin
 ./data/db/223ADB3_v.db
 ./data/hospital_map.dat
 ./data/ML_Analysis.md
+
+## To run this web app, please run
+
+```
+python main.py
+```
