@@ -17,7 +17,10 @@
 
 ## Database
 
-- Lavanya: Explored the unknowns of the DB world and did her magic.
+- Lavanya: Explored different DBMS options for implementation of Database module for the project  
+  - Wrote all functions in database_functions.py (to setup connection, create tables, push / query data, reorganizing dataframes)
+  - Code outline to integrate Web Application with Database
+  - Co-wrote application_script.ipynb with Jennifer
 
 ## Machine learning
 
@@ -26,13 +29,27 @@
   - Helped write icd9_group function in parsing_icd9
   - Set up meetings and enforced deadlines to help the project move forward
 
-## Interface
+## Web interface
 
-- Akashya: Did a great visualization and demo of
+- Akshaya: 
+  - Python function for creating Dictionary for creating the dynamic forms
+  - Python function for displaying Charts for displaying show/no show for all modalities and Hospital
+  - Integration between Database and the Web application.
+  - Also created dropdown features(html and css) but was not used in the final version of the web App.
 
-- Chrysostomos: how COOL 
+- Chrysostomos:
+  - Design of the layout of the dashboard.
+  - Creation of hospital_map for the web form of the dashboard (./hospital_map.ipynb).
+  - Construction of the dashboard form and calendar.
+  - Help in the integration with the database.
+  - Modification of the database with extra columns (for use in the web app).
 
-- James: we and our deliverables are. 
+- James:
+  - Made bone structure for the web application.
+  - Discussed with Chrysostomos and nailed down to the final layout.
+  - Explored dropdown menu but the final version was implemented by the Chrysostomos.
+  - Implemented interactive stacked bar chart and line chart using `Chart.js` template.
+  - Retrieve data from the database for making charts.
 
 # That's right. 
 
