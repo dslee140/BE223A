@@ -17,10 +17,10 @@
 
 ## Database
 
-- Lavanya: Explored different DBMS options for implementation of the Database module for the project  
- - Wrote all functions in database_functions.py (to setup connection, create tables, push / query data, reorganizing dataframes)
- - Code outline to integrate Web Application with Database
- - Co-wrote application_script.ipynb with Jennifer
+- Lavanya: Explored different DBMS options for implementation of Database module for the project  
+  - Wrote all functions in database_functions.py (to setup connection, create tables, push / query data, reorganizing dataframes)
+  - Code outline to integrate Web Application with Database
+  - Co-wrote application_script.ipynb with Jennifer
 
 ## Machine learning
 
