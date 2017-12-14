@@ -8,7 +8,7 @@ sys.path.insert(0,parentdir)
 from database_functions import *
 
 
-def day_timeslots(orgcode, modality, dept, date_time):
+def day_timeslots(orgcode, modality, dept, date_time, all_data = True):
     '''
     Queries the database for specific orgcode, modality, departmentcode and a single date. Returns
     filtered data as a pandas.DataFrame.
@@ -22,17 +22,18 @@ def day_timeslots(orgcode, modality, dept, date_time):
     -------
     day_info: pandas.DataFrame
     '''
-    query = "SELECT Exam_ID FROM results"
-    exam_ids_test = list(query_data("./data/db/223ADB3.db", query)['Exam_ID'])
     query_day = str(date_time.date())
-    query = "SELECT `Exam ID`, `OrgCode`, `Modality`, `DepartmentCode`, `Age`, `Patient ID`, `Gender`, `datetime`"
-    query = query + " FROM rawdata WHERE Orgcode='%s' AND Modality='%s' AND DepartmentCode = '%s'" %(orgcode,modality,dept)
-    query = query +  "AND `datetime` BETWEEN '"+query_day+"' and '"+query_day+" 23:59:59' AND `Exam ID` IN ("
-    for eid in exam_ids_test:
-        query += str(eid) + ", "
-    query = query[:-2]
-    query += ")"
-    info_day = query_data("./data/db/223ADB3.db", query)
+    query = "SELECT apt.Exam_ID, apt.OrgCode, apt.Modality, pat.Age, pat.Patient_ID, pat.Gender, apt.datetime "
+    if all_data:
+        query += "FROM appointments apt "
+    else:
+        query += "FROM vresults vr "
+        query += "JOIN appointments apt ON apt.Exam_ID = vr.Exam_ID "
+    query += "JOIN patients pat ON pat.Patient_ID = apt.Patient_ID "
+    query += "WHERE apt.Orgcode='%s' AND apt.Modality='%s' AND apt.DepartmentCode = '%s' " %(orgcode,modality,dept)
+    query = query +  "AND `datetime` BETWEEN '"+query_day+"' and '"+query_day+" 23:59:59'"
+    info_day = query_data("./data/db/223ADB3_v.db", query)
+    # Make the datetime column as datetime objects
     date_time= parse_datetime(info_day.pop('datetime'), dt_format = '%Y-%m-%d  %H:%M:%S')
     df= pd.DataFrame({'datetime':date_time})
     day_info=pd.concat([info_day, df], axis=1)
@@ -99,7 +100,7 @@ def generate_timeslots(orgcode, modality, dept, dt_initial, threshold = 0.5):
         dt_next = dt_temp + dt.timedelta(days = 1)
         days.append(dt_temp.strftime("%A") + '\n'+dt_temp.strftime("%m")+'/'+dt_temp.strftime("%d") )
 
-        info_day=day_timeslots(orgcode, modality, dept, dt_temp)
+        info_day=day_timeslots(orgcode, modality, dept, dt_temp, all_data = False)
 
 
         #info_day = info_filt.loc[(info_filt.datetime >= dt_temp) & (info_filt.datetime < dt_next)]
@@ -118,9 +119,9 @@ def generate_timeslots(orgcode, modality, dept, dt_initial, threshold = 0.5):
                 gender = None
                 status = 2
             else:
-                exam_id = int(info_ts.iloc[0]['Exam ID']) # Pick only the first examid
+                exam_id = int(info_ts.iloc[0]['Exam_ID']) # Pick only the first examid
                 probability = predict_probability(exam_id)
-                patient_id = info_ts.iloc[0]['Patient ID'][0:10]
+                patient_id = info_ts.iloc[0]['Patient_ID'][0:10]
                 age = int(info_ts.iloc[0]['Age'])
                 gender = info_ts.iloc[0]['Gender']
                 if gender == 'M':
@@ -159,9 +160,8 @@ def predict_probability(exam_id):
     -------
     probability: float
     '''
-    query = "SELECT Probabilities FROM results  WHERE Exam_ID = %s" %exam_id
-    info_day = query_data("./data/db/223ADB3.db", query)
-    #print(info_day)
+    query = "SELECT Probabilities FROM vresults  WHERE Exam_ID = %s" %exam_id
+    info_day = query_data("./data/db/223ADB3_v.db", query)
     probability = info_day.loc[0]['Probabilities']
     return probability
 
