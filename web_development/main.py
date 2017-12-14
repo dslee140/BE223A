@@ -159,7 +159,7 @@ def calendar_json():
     modality = request.args.get('modality')
     dept = request.args.get('departmentcode')
     # The initial date on the week calendar hard-coded, to be updated when data are current
-    initial_date = datetime(3246,12,10)
+    initial_date = datetime(3246,1,16)
     table_data, days, ts_times = generate_timeslots(orgcode, modality, dept, initial_date)
 
     ts_data = timeslots_for_charts(orgcode, modality, dept, initial_date)
@@ -193,7 +193,6 @@ class FiltersForm(FlaskForm):
 def dashboard():
     form = FiltersForm()
     return render_template('dashboard.html', form =form)
-
 
 
 if __name__ == "__main__":

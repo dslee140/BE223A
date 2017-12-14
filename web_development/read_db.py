@@ -20,11 +20,11 @@ def filt_shows():
 
     query = "SELECT `OrgCode`, `Modality`"
     query = query + " FROM appointments WHERE Label='%d'" %(0)
-    show = pd.DataFrame(query_data("./data/db/223ADB3.db", query))
+    show = pd.DataFrame(query_data("./data/db/223ADB3_v.db", query))
 
     query = "SELECT `OrgCode`, `Modality`"
     query = query + " FROM appointments WHERE Label='%d'" %(1)
-    noshow = pd.DataFrame(query_data("./data/db/223ADB3.db", query))
+    noshow = pd.DataFrame(query_data("./data/db/223ADB3_V.db", query))
 
     return show, noshow
 
