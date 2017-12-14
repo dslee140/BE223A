@@ -13,7 +13,8 @@ The dependencies for this is in `requirements.txt` file, run
 to install all the required packages for this application.
 
 File dependencies:
-./data/db/223ADB3_v.db
-./data/hospital_map.dat
-./data/ML_Analysis.md
+
+- ./data/db/223ADB3_v.db
+- ./data/hospital_map.dat
+- ./data/ML_Analysis.md
 Files cannot be provided.
