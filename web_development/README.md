@@ -1,25 +1,19 @@
-# Web application
+## The Web App for Predicting of Patient No-Show
 
-## Main functionalities
-- Schedule Dashboard
-- Presentation of the Machine Learning model
+To run this web app, please run
 
-## Dependencies
-### Libraries
-We use the framework Flask to build the web app. One should install the following libraries before running the app:
-- flask
-- Flask-Bootstrap
-- Flask-Misaka
-- flask-wtf
-- markdown
+    python main.py
 
-### Files
-./data/db/223ADB3_v.db
-./data/hospital_map.dat
-./data/ML_Analysis.md
+Then type http://0.0.0.0:5001/ in your web browser.
 
-## To run this web app, please run
+The dependencies for this is in `requirements.txt` file, run
 
-```
-python main.py
-```
+    pip install -r requirements.txt
+
+to install all the required packages for this application.
+
+File dependencies:
+
+- ./data/db/223ADB3_v.db
+- ./data/hospital_map.dat
+- ./data/ML_Analysis.md
