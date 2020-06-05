@@ -39,7 +39,7 @@ datashape==0.5.2
 decorator==4.1.2
 dill==0.2.5
 dipy==0.11.0
-Django==1.10.6
+Django==1.11.29
 docutils==0.12
 dominate==2.3.1
 dynd==0.7.3.dev1
