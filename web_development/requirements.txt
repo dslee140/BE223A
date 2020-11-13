@@ -188,7 +188,7 @@ SQLAlchemy==1.0.13
 statsmodels==0.6.1
 sympy==1.0
 tables==3.2.3.1
-tensorflow==1.0.0
+tensorflow==2.3.1
 terminado==0.6
 toolz==0.8.0
 tornado==4.4.1
