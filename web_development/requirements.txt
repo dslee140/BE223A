@@ -137,7 +137,7 @@ protobuf==3.2.0
 prov==1.5.0
 psutil==4.3.1
 ptyprocess==0.5.1
-py==1.4.31
+py==1.10.0
 pyasn1==0.1.9
 pycosat==0.6.1
 pycparser==2.14
