@@ -49,7 +49,7 @@ filelock==2.0.6
 Flask==0.12.2
 Flask-Bootstrap==3.3.7.1
 Flask-Compress==1.4.0
-Flask-Cors==2.1.2
+Flask-Cors==3.0.9
 Flask-Misaka==0.4.1
 Flask-WTF==0.14.2
 future==0.16.0
