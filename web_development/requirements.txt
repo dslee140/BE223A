@@ -34,7 +34,7 @@ dash==0.19.0
 dash-core-components==0.14.0
 dash-html-components==0.8.0
 dash-renderer==0.11.1
-dask==0.11.0
+dask==2021.10.0
 datashape==0.5.2
 decorator==4.1.2
 dill==0.2.5
