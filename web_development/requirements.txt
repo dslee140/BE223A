@@ -127,7 +127,7 @@ pbr==1.10.0
 pep8==1.7.0
 pexpect==4.0.1
 pickleshare==0.7.4
-Pillow==4.2.1
+Pillow==9.0.1
 pkginfo==1.3.2
 -e git+https://github.com/tyarkoni/pliers.git@f02dc732284a8e626c4dd787a2a915fe912af721#egg=pliers
 plotly==2.2.2
