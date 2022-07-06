@@ -82,7 +82,7 @@ lazy-object-proxy==1.2.1
 libmagic==1.0
 llvmlite==0.13.0
 locket==0.2.0
-lxml==3.7.2
+lxml==4.9.1
 Markdown==2.6.9
 MarkupSafe==0.23
 matplotlib==2.1.0
