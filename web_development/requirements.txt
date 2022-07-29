@@ -87,7 +87,7 @@ Markdown==2.6.9
 MarkupSafe==0.23
 matplotlib==2.1.0
 misaka==2.1.0
-mistune==0.7.3
+mistune==2.0.3
 mock==2.0.0
 moviepy==0.2.2.13
 mpld3==0.2
