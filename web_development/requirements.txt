@@ -16,7 +16,7 @@ blaze==0.10.1
 bokeh==0.12.2
 boto==2.42.0
 Bottleneck==1.1.0
-certifi==2017.11.5
+certifi==2022.12.7
 cffi==1.7.0
 chardet==3.0.4
 chest==0.2.3
